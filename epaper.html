@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <title>E-Paper Wetterstation Classic</title>
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: Arial, Helvetica, sans-serif;
+    }
+
+    body {
+      width: 800px;
+      height: 480px;
+      background-color: #ffffff;
+      color: #000000;
+      padding: 4px;
+      overflow: hidden;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 210px 1fr 210px;
+      gap: 4px;
+      height: 472px;
+    }
+
+    .border-box {
+      border: 2px solid #000;
+      border-radius: 10px;
+      padding: 6px 8px;
+      position: relative;
+      background: #fff;
+    }
+
+    .side-column {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      height: 100%;
+    }
+
+    .room-card {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      align-items: center;
+      text-align: center;
+    }
+
+    .room-title {
+      font-size: 20px;
+      font-weight: bold;
+      width: 100%;
+    }
+
+    .room-temp-group {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      line-height: 1.1;
+    }
+
+    .temp-display {
+      display: inline-flex;
+      align-items: baseline;
+      white-space: nowrap;
+    }
+
+    .temp-val-num {
+      font-size: 42px;
+      font-weight: bold;
+      letter-spacing: -1px;
+    }
+
+    /* Das Grad-Zeichen deutlich vergrößert und oben platziert */
+    .degree-symbol {
+      font-size: 34px;
+      font-weight: normal;
+      vertical-align: top;
+      line-height: 0.9;
+    }
+
+    /* Das 'C' klein und schlank wie auf dem Foto */
+    .unit-c-group {
+      font-size: 26px;
+      font-weight: normal;
+    }
+
+    .trend-text {
+      font-size: 14px;
+      font-weight: bold;
+      margin-top: -2px;
+    }
+
+    .hourly-trend {
+      font-size: 11px;
+      font-weight: normal;
+      color: #000;
+    }
+
+    .co2-inner-box {
+      border: 2px solid #000;
+      border-radius: 6px;
+      width: 90%; 
+      padding: 3px 6px;
+      display: grid;
+      grid-template-columns: 1fr auto;
+      grid-template-rows: auto auto;
+      align-items: center;
+      margin: 2px auto;
+      background-color: #fff;
+    }
+
+    .co2-title {
+      grid-column: 1 / span 2;
+      font-size: 18px; 
+      font-weight: bold;
+      text-align: center;
+      margin-bottom: 2px;
+    }
+
+    .co2-val {
+      font-size: 30px;
+      font-weight: bold;
+      text-align: center;
+      line-height: 1;
+    }
+
+    .co2-badge {
+      border: 1.5px solid #000;
+      border-radius: 3px;
+      padding: 2px 4px;
+      font-size: 12px;
+      font-weight: bold;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      line-height: 1;
+      height: 20px;
+    }
+
+    .humidity-text {
+      font-size: 14px;
+      font-weight: normal;
+    }
+
+    .hum-val {
+      font-size: 18px;
+      font-weight: bold;
+    }
+
+    .center-column {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      height: 100%;
+    }
+
+    .top-center {
+      flex: 1.1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .forecast-title {
+      text-align: center;
+      font-size: 14px;
+      font-weight: bold;
+      border-bottom: 1px solid #000;
+      padding-bottom: 2px;
+    }
+
+    .forecast-days-container {
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+      padding: 4px 0;
+    }
+
+    .day-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+    }
+
+    .day-name {
+      font-size: 15px;
+      font-weight: bold;
+    }
+
+    .mono-symbol {
+      font-size: 24px;
+      font-weight: bold;
+      margin: 2px 0;
+      line-height: 1;
+    }
+
+    .day-temp {
+      font-size: 17px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .astro-info-row {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      border-top: 1px solid #ccc;
+      padding-top: 2px;
+    }
+
+    .bottom-center {
+      flex: 0.9;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .meteo-5h-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 2px 0;
+    }
+
+    .meteo-hour-item {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      text-align: center;
+      flex: 1;
+    }
+
+    .meteo-time {
+      font-size: 13px;
+      font-weight: bold;
+    }
+
+    .meteo-temp {
+      font-size: 15px;
+      font-weight: bold;
+      white-space: nowrap;
+    }
+
+    .date-display {
+      text-align: center;
+      border-top: 1px solid #000;
+      padding-top: 4px;
+    }
+
+    .date-main {
+      font-size: 17px;
+      font-weight: bold;
+    }
+
+    .date-sub {
+      font-size: 11px;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="dashboard">
+
+    <!-- LINKEN SPALTE -->
+    <div class="side-column">
+      
+      <!-- WOHNZIMMER -->
+      <div class="border-box room-card">
+        <div class="room-title">Wohnzimmer</div>
+        <div class="room-temp-group">
+          <div class="temp-display">
+            <span class="temp-val-num" id="wz-temp-num">25.3</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
+          </div>
+          <span class="trend-text"><span id="wz-trend">beständig</span> <span class="hourly-trend" id="wz-hourly">(+0.0°/h)</span></span>
+        </div>
+        <div class="co2-inner-box">
+          <div class="co2-title">CO₂</div>
+          <div class="co2-val" id="wz-co2">451</div>
+          <div class="co2-badge">ppm</div>
+        </div>
+        <div class="humidity-text"><span class="hum-val" id="wz-hum-val">60 %</span> Luftfeuchte</div>
+      </div>
+
+      <!-- BÜRO -->
+      <div class="border-box room-card">
+        <div class="room-title">Büro</div>
+        <div class="room-temp-group">
+          <div class="temp-display">
+            <span class="temp-val-num" id="buero-temp-num">24.7</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
+          </div>
+          <span class="trend-text"><span id="buero-trend">steigend</span> <span class="hourly-trend" id="buero-hourly">(+0.3°/h)</span></span>
+        </div>
+        <div class="co2-inner-box">
+          <div class="co2-title">CO₂</div>
+          <div class="co2-val" id="buero-co2">522</div>
+          <div class="co2-badge">ppm</div>
+        </div>
+        <div class="humidity-text"><span class="hum-val" id="buero-hum-val">54 %</span> Luftfeuchte</div>
+      </div>
+
+    </div>
+
+    <!-- MITTLERE SPALTE -->
+    <div class="center-column">
+      
+      <div class="border-box top-center">
+        <div class="forecast-title">3-Tage Vorhersage (Nohfelden-Eiweiler)</div>
+        
+        <!-- 3-TAGE-VORHERSAGE -->
+        <div class="forecast-days-container">
+          <div class="day-item">
+            <span class="day-name">Heute</span>
+            <span class="mono-symbol" id="fc-icon-0">&#9728;</span>
+            <span class="day-temp"><span id="fc-max-0">26°</span> / <span id="fc-min-0">16°</span></span>
+          </div>
+          <div style="border-left: 1px solid #000; height: 35px;"></div>
+          <div class="day-item">
+            <span class="day-name" id="fc-day-1">Morgen</span>
+            <span class="mono-symbol" id="fc-icon-1">&#9729;</span>
+            <span class="day-temp"><span id="fc-max-1">24°</span> / <span id="fc-min-1">15°</span></span>
+          </div>
+          <div style="border-left: 1px solid #000; height: 35px;"></div>
+          <div class="day-item">
+            <span class="day-name" id="fc-day-2">Überm.</span>
+            <span class="mono-symbol" id="fc-icon-2">&#9748;</span>
+            <span class="day-temp"><span id="fc-max-2">21°</span> / <span id="fc-min-2">13°</span></span>
+          </div>
+        </div>
+
+        <div class="astro-info-row">
+          <div>
+            <b id="sunrise-time">06:24</b> Sonnenaufg.<br>
+            <b id="sunset-time">20:48</b> Sonnenunterg.<br>
+            <small>Mond: Zunehmende Sichel | Sternzeichen: Löwe</small>
+          </div>
+          <div style="text-align: right;">
+            WLAN: <b>-76dBm</b><br>
+            Akku: <b>100% (3.3V)</b>
+          </div>
+        </div>
+      </div>
+
+      <div class="border-box bottom-center">
+        
+        <div style="font-size: 11px; font-weight: bold; text-align: center; border-bottom: 1px dashed #aaa; padding-bottom: 1px;">5 Stunden Trend</div>
+        
+        <div class="meteo-5h-container">
+          <div class="meteo-hour-item">
+            <span class="meteo-time" id="m-time-0">12:00</span>
+            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-0">&#9728;</span>
+            <span class="meteo-temp" id="m-temp-0">24°</span>
+          </div>
+          <div class="meteo-hour-item">
+            <span class="meteo-time" id="m-time-1">13:00</span>
+            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-1">&#9728;</span>
+            <span class="meteo-temp" id="m-temp-1">25°</span>
+          </div>
+          <div class="meteo-hour-item">
+            <span class="meteo-time" id="m-time-2">14:00</span>
+            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-2">&#9729;</span>
+            <span class="meteo-temp" id="m-temp-2">25°</span>
+          </div>
+          <div class="meteo-hour-item">
+            <span class="meteo-time" id="m-time-3">15:00</span>
+            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-3">&#9729;</span>
+            <span class="meteo-temp" id="m-temp-3">23°</span>
+          </div>
+          <div class="meteo-hour-item">
+            <span class="meteo-time" id="m-time-4">16:00</span>
+            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-4">&#9748;</span>
+            <span class="meteo-temp" id="m-temp-4">21°</span>
+          </div>
+        </div>
+
+        <div style="display: flex; justify-content: space-between; font-size: 11px; border-top: 1px dashed #aaa; padding-top: 2px;">
+          <div><b>Wind:</b> <span id="wind-val">2.0 m/s WSW</span></div>
+          <div><b>Regen:</b> <span id="rain-val">0 mm/24h</span></div>
+        </div>
+
+        <div class="date-display">
+          <div class="date-main" id="full-date">Montag, 17. August 2026</div>
+          <div class="date-sub" id="update-info">aktualisiert: 11:06:36</div>
+        </div>
+      </div>
+
+    </div>
+
+    <!-- RECHTE SPALTE -->
+    <div class="side-column">
+      
+      <!-- AUSSENBEREICH -->
+      <div class="border-box room-card">
+        <div class="room-title">Außenbereich</div>
+        <div class="room-temp-group">
+          <div class="temp-display">
+            <span class="temp-val-num" id="out-temp-num">24.4</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
+          </div>
+          <span class="trend-text"><span id="out-trend">steigend</span> <span class="hourly-trend" id="out-hourly">(+0.5°/h)</span></span>
+        </div>
+        
+        <div class="co2-inner-box">
+          <div class="co2-title">Luftdruck &#9654;</div>
+          <div class="co2-val" id="pressure-val" style="font-size: 26px;">1014</div>
+          <div class="co2-badge">hPa</div>
+        </div>
+        
+        <div class="humidity-text"><span class="hum-val" id="out-hum-val">65 %</span> Luftfeuchte</div>
+      </div>
+
+      <!-- OBERGESCHOSS -->
+      <div class="border-box room-card">
+        <div class="room-title">Obergeschoß</div>
+        <div class="room-temp-group">
+          <div class="temp-display">
+            <span class="temp-val-num" id="og-temp-num">26.4</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
+          </div>
+          <span class="trend-text"><span id="og-trend">steigend</span> <span class="hourly-trend" id="og-hourly">(+0.2°/h)</span></span>
+        </div>
+        <div class="co2-inner-box">
+          <div class="co2-title">CO₂</div>
+          <div class="co2-val" id="og-co2">484</div>
+          <div class="co2-badge">ppm</div>
+        </div>
+        <div class="humidity-text"><span class="hum-val" id="og-hum-val">49 %</span> Luftfeuchte</div>
+      </div>
+
+    </div>
+
+  </div>
+
+  <script>
+    function getTrendText(trend) {
+      if (trend === 'up') return 'steigend';
+      if (trend === 'down') return 'fallend';
+      return 'beständig';
+    }
+
+    function getWeatherIcon(code) {
+      if (code === 0) return '&#9728;'; 
+      if (code >= 1 && code <= 3) return '&#9729;'; 
+      if (code >= 51) return '&#9748;'; 
+      return '&#9729;';
+    }
+
+    async function loadEiweilerForecast() {
+      try {
+        const url = 'https://api.open-meteo.com/v1/forecast?latitude=49.563&longitude=7.022&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset&hourly=temperature_2m,weathercode&timezone=Europe%2FBerlin';
+        const res = await fetch(url);
+        const data = await res.json();
+
+        for (let i = 0; i < 3; i++) {
+          if (document.getElementById(`fc-max-${i}`)) {
+            document.getElementById(`fc-max-${i}`).innerText = Math.round(data.daily.temperature_2m_max[i]) + '°';
+            document.getElementById(`fc-min-${i}`).innerText = Math.round(data.daily.temperature_2m_min[i]) + '°';
+            document.getElementById(`fc-icon-${i}`).innerHTML = getWeatherIcon(data.daily.weathercode[i]);
+          }
+        }
+
+        if (data.daily.sunrise[0]) {
+          document.getElementById('sunrise-time').innerText = data.daily.sunrise[0].substring(11, 16);
+          document.getElementById('sunset-time').innerText = data.daily.sunset[0].substring(11, 16);
+        }
+
+        const currentHour = new Date().getHours();
+        for (let i = 0; i < 5; i++) {
+          const hourIndex = currentHour + i;
+          if (document.getElementById(`m-time-${i}`)) {
+            document.getElementById(`m-time-${i}`).innerText = `${(hourIndex) % 24}:00`;
+            document.getElementById(`m-temp-${i}`).innerText = Math.round(data.hourly.temperature_2m[hourIndex]) + '°';
+            document.getElementById(`m-icon-${i}`).innerHTML = getWeatherIcon(data.hourly.weathercode[hourIndex]);
+          }
+        }
+      } catch (e) {
+        console.error("Fehler beim Abrufen der Nohfelden-Eiweiler Daten:", e);
+      }
+    }
+
+    async function loadData() {
+      try {
+        const res = await fetch('data.json?t=' + new Date().getTime());
+        const data = await res.json();
+
+        const now = new Date();
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        document.getElementById('full-date').innerText = now.toLocaleDateString('de-DE', options);
+        if(data.timestamp) document.getElementById('update-info').innerText = `aktualisiert: ${data.timestamp}`;
+
+        // Wohnzimmer
+        if(data.wohnzimmer) {
+          document.getElementById('wz-temp-num').innerText = data.wohnzimmer.temp ?? '--';
+          document.getElementById('wz-hum-val').innerText = (data.wohnzimmer.hum ?? '--') + ' %';
+          document.getElementById('wz-co2').innerText = data.wohnzimmer.co2 ?? '---';
+          document.getElementById('wz-trend').innerText = getTrendText(data.wohnzimmer.trend);
+          if(data.wohnzimmer.hourly !== undefined) document.getElementById('wz-hourly').innerText = `(${data.wohnzimmer.hourly > 0 ? '+' : ''}${data.wohnzimmer.hourly}°/h)`;
+        }
+
+        // Büro
+        const bueroData = data.buero || data.firma;
+        if(bueroData) {
+          document.getElementById('buero-temp-num').innerText = bueroData.temp ?? '--';
+          document.getElementById('buero-hum-val').innerText = (bueroData.hum ?? '--') + ' %';
+          document.getElementById('buero-co2').innerText = bueroData.co2 ?? '---';
+          document.getElementById('buero-trend').innerText = getTrendText(bueroData.trend);
+          if(bueroData.hourly !== undefined) document.getElementById('buero-hourly').innerText = `(${bueroData.hourly > 0 ? '+' : ''}${bueroData.hourly}°/h)`;
+        }
+
+        // Obergeschoss
+        if(data.og) {
+          document.getElementById('og-temp-num').innerText = data.og.temp ?? '--';
+          document.getElementById('og-hum-val').innerText = (data.og.hum ?? '--') + ' %';
+          document.getElementById('og-co2').innerText = data.og.co2 ?? '---';
+          document.getElementById('og-trend').innerText = getTrendText(data.og.trend);
+          if(data.og.hourly !== undefined) document.getElementById('og-hourly').innerText = `(${data.og.hourly > 0 ? '+' : ''}${data.og.hourly}°/h)`;
+        }
+
+        // Außenbereich
+        if(data.draussen) {
+          document.getElementById('out-temp-num').innerText = data.draussen.temp ?? '--';
+          document.getElementById('out-hum-val').innerText = (data.draussen.hum ?? '--') + ' %';
+          document.getElementById('out-trend').innerText = getTrendText(data.draussen.trend);
+          if(data.draussen.hourly !== undefined) document.getElementById('out-hourly').innerText = `(${data.draussen.hourly > 0 ? '+' : ''}${data.draussen.hourly}°/h)`;
+        }
+        if(data.druck) {
+          document.getElementById('pressure-val').innerText = Math.round(data.druck.val || 1014);
+        }
+
+      } catch (e) {
+        console.error("Fehler beim Laden lokaler Daten:", e);
+      }
+    }
+
+    loadData();
+    loadEiweilerForecast();
+  </script>
+</body>
+</html>
