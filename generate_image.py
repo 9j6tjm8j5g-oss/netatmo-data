@@ -8,10 +8,12 @@ def create_epaper_png():
         
         # Lokale epaper.html aufrufen
         file_path = f"file://{os.path.abspath('epaper.html')}"
-        page.goto(file_path, wait_until="domcontentloaded")
         
-        # kurz warten, bis Javascript/Render fertig ist
-        page.wait_for_timeout(3000)
+        # Warten, bis alle Netzwerkanfragen (wie das Laden von data.json) durch sind
+        page.goto(file_path, wait_until="networkidle")
+        
+        # 5 Sekunden Sicherheitspuffer für das JS-Rendering
+        page.wait_for_timeout(5000)
         
         # Bild speichern
         page.screenshot(path="epaper.png")
