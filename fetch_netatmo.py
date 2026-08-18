@@ -158,3 +158,24 @@ output["timestamp"] = datetime.now(tz).strftime("%H:%M")
 
 with open("data.json", "w", encoding="utf-8") as f:
     json.dump(output, f, indent=2, ensure_ascii=False)
+from playwright.sync_api import sync_playwright
+
+def create_epaper_png():
+    with sync_playwright() as p:
+        # Browser starten
+        browser = p.chromium.launch()
+        # Bildschirmgröße exakt auf dein E-Paper anpassen (z. B. 800x480)
+        page = browser.new_page(viewport={"width": 800, "height": 480})
+        
+        # Deine GitHub Pages HTML-Seite aufrufen (oder eine lokale epaper.html)
+        page.goto("https://9j6tjm8j5g-oss.github.io/netatmo-data/epaper.html")
+        
+        # Warten, bis alles geladen ist (z. B. 2 Sekunden)
+        page.wait_for_timeout(2000)
+        
+        # Screenshot als epaper.png speichern
+        page.screenshot(path="epaper.png")
+        browser.close()
+
+if __name__ == "__main__":
+    create_epaper_png()
