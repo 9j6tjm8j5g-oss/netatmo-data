@@ -2,542 +2,521 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <title>E-Paper Wetterstation Classic</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Wetterstation Dashboard</title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
-      font-family: Arial, Helvetica, sans-serif;
     }
 
     body {
-      width: 800px;
-      height: 480px;
-      background-color: #ffffff;
-      color: #000000;
-      padding: 4px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      background-color: #0f172a;
+      color: #f8fafc;
+      display: flex;
+      flex-direction: column;
+      height: 100vh;
       overflow: hidden;
     }
 
-    .dashboard {
-      display: grid;
-      grid-template-columns: 210px 1fr 210px;
-      gap: 4px;
-      height: 472px;
+    header {
+      padding: 12px 16px;
+      background-color: #1e293b;
+      border-bottom: 1px solid #334155;
+      text-align: center;
+      flex-shrink: 0;
     }
 
-    .border-box {
-      border: 2px solid #000;
-      border-radius: 10px;
-      padding: 6px 8px;
-      position: relative;
-      background: #fff;
+    header h1 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: #f1f5f9;
     }
 
-    .side-column {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      height: 100%;
+    header p {
+      font-size: 0.75rem;
+      color: #94a3b8;
+      margin-top: 2px;
     }
 
-    .room-card {
+    .slider-container {
       flex: 1;
       display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-      align-items: center;
-      text-align: center;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
     }
 
-    .room-title {
-      font-size: 20px;
-      font-weight: bold;
+    .slider-container::-webkit-scrollbar {
+      display: none;
+    }
+
+    .page {
+      flex: 0 0 100%;
       width: 100%;
-    }
-
-    .room-temp-group {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      line-height: 1.1;
-    }
-
-    .temp-display {
-      display: inline-flex;
-      align-items: baseline;
-      white-space: nowrap;
-    }
-
-    .temp-val-num {
-      font-size: 42px;
-      font-weight: bold;
-      letter-spacing: -1px;
-    }
-
-    /* Das Grad-Zeichen deutlich vergrößert und oben platziert */
-    .degree-symbol {
-      font-size: 34px;
-      font-weight: normal;
-      vertical-align: top;
-      line-height: 0.9;
-    }
-
-    /* Das 'C' klein und schlank wie auf dem Foto */
-    .unit-c-group {
-      font-size: 26px;
-      font-weight: normal;
-    }
-
-    .trend-text {
-      font-size: 14px;
-      font-weight: bold;
-      margin-top: -2px;
-    }
-
-    .hourly-trend {
-      font-size: 11px;
-      font-weight: normal;
-      color: #000;
-    }
-
-    .co2-inner-box {
-      border: 2px solid #000;
-      border-radius: 6px;
-      width: 90%; 
-      padding: 3px 6px;
-      display: grid;
-      grid-template-columns: 1fr auto;
-      grid-template-rows: auto auto;
-      align-items: center;
-      margin: 2px auto;
-      background-color: #fff;
-    }
-
-    .co2-title {
-      grid-column: 1 / span 2;
-      font-size: 18px; 
-      font-weight: bold;
-      text-align: center;
-      margin-bottom: 2px;
-    }
-
-    .co2-val {
-      font-size: 30px;
-      font-weight: bold;
-      text-align: center;
-      line-height: 1;
-    }
-
-    .co2-badge {
-      border: 1.5px solid #000;
-      border-radius: 3px;
-      padding: 2px 4px;
-      font-size: 12px;
-      font-weight: bold;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      line-height: 1;
-      height: 20px;
-    }
-
-    .humidity-text {
-      font-size: 14px;
-      font-weight: normal;
-    }
-
-    .hum-val {
-      font-size: 18px;
-      font-weight: bold;
-    }
-
-    .center-column {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
       height: 100%;
-    }
-
-    .top-center {
-      flex: 1.1;
+      scroll-snap-align: start;
+      padding: 12px;
+      overflow-y: auto;
       display: flex;
       flex-direction: column;
-      justify-content: space-between;
+      gap: 12px;
     }
 
-    .forecast-title {
+    .card {
+      background-color: #1e293b;
+      border-radius: 12px;
+      padding: 12px;
+      border-left: 4px solid #38bdf8;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
+    }
+
+    .card.blue { border-left-color: #38bdf8; }
+    .card.orange { border-left-color: #fb923c; }
+    .card.purple { border-left-color: #c084fc; }
+    .card.green { border-left-color: #4ade80; }
+
+    .card-icon {
+      font-size: 1.8rem;
+      width: 40px;
       text-align: center;
-      font-size: 14px;
-      font-weight: bold;
-      border-bottom: 1px solid #000;
-      padding-bottom: 2px;
     }
 
-    .forecast-days-container {
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-      padding: 4px 0;
-    }
-
-    .day-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-    }
-
-    .day-name {
-      font-size: 15px;
-      font-weight: bold;
-    }
-
-    .mono-symbol {
-      font-size: 24px;
-      font-weight: bold;
-      margin: 2px 0;
-      line-height: 1;
-    }
-
-    .day-temp {
-      font-size: 17px;
-      font-weight: bold;
-      white-space: nowrap;
-    }
-
-    .astro-info-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      border-top: 1px solid #ccc;
-      padding-top: 2px;
-    }
-
-    .bottom-center {
-      flex: 0.9;
-      display: flex;
-      flex-direction: column;
-      justify-content: space-between;
-    }
-
-    .meteo-5h-container {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 2px 0;
-    }
-
-    .meteo-hour-item {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
+    .card-content {
       flex: 1;
     }
 
-    .meteo-time {
-      font-size: 13px;
-      font-weight: bold;
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
     }
 
-    .meteo-temp {
-      font-size: 15px;
-      font-weight: bold;
-      white-space: nowrap;
+    .card-title-group h3 {
+      font-size: 0.95rem;
+      font-weight: 600;
+      color: #f1f5f9;
     }
 
-    .date-display {
-      text-align: center;
-      border-top: 1px solid #000;
-      padding-top: 4px;
+    .card-title-group p {
+      font-size: 0.7rem;
+      color: #94a3b8;
     }
 
-    .date-main {
-      font-size: 17px;
-      font-weight: bold;
+    .battery-badge {
+      font-size: 0.65rem;
+      padding: 2px 6px;
+      background-color: #334155;
+      border-radius: 10px;
+      color: #cbd5e1;
     }
 
-    .date-sub {
-      font-size: 11px;
+    .battery-badge.low {
+      background-color: #7f1d1d;
+      color: #fca5a5;
+    }
+
+    .metrics-box {
+      display: flex;
+      justify-content: space-between;
+      background-color: #0f172a;
+      padding: 8px;
+      border-radius: 8px;
+      margin-top: 4px;
+    }
+
+    .metric {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex: 1;
+    }
+
+    .metric-label {
+      font-size: 0.65rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+    }
+
+    .metric-value {
+      font-size: 0.85rem;
+      font-weight: 700;
+      color: #f8fafc;
+      margin-top: 2px;
+      display: flex;
+      align-items: center;
+      gap: 2px;
+    }
+
+    .trend {
+      font-size: 0.7rem;
+    }
+
+    .navigation-dots {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      gap: 8px;
+      padding: 8px;
+      background-color: #1e293b;
+      border-top: 1px solid #334155;
+      flex-shrink: 0;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background-color: #475569;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .dot.active {
+      background-color: #38bdf8;
+      width: 20px;
+      border-radius: 4px;
     }
   </style>
 </head>
 <body>
 
-  <div class="dashboard">
+  <header>
+    <h1>Wetterstation</h1>
+    <p id="timestamp-text">Lade Daten...</p>
+  </header>
 
-    <!-- LINKEN SPALTE -->
-    <div class="side-column">
-      
-      <!-- WOHNZIMMER -->
-      <div class="border-box room-card">
-        <div class="room-title">Wohnzimmer</div>
-        <div class="room-temp-group">
-          <div class="temp-display">
-            <span class="temp-val-num" id="wz-temp-num">25.3</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
-          </div>
-          <span class="trend-text"><span id="wz-trend">beständig</span> <span class="hourly-trend" id="wz-hourly">(+0.0°/h)</span></span>
-        </div>
-        <div class="co2-inner-box">
-          <div class="co2-title">CO₂</div>
-          <div class="co2-val" id="wz-co2">451</div>
-          <div class="co2-badge">ppm</div>
-        </div>
-        <div class="humidity-text"><span class="hum-val" id="wz-hum-val">60 %</span> Luftfeuchte</div>
-      </div>
-
-      <!-- BÜRO -->
-      <div class="border-box room-card">
-        <div class="room-title">Büro</div>
-        <div class="room-temp-group">
-          <div class="temp-display">
-            <span class="temp-val-num" id="buero-temp-num">24.7</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
-          </div>
-          <span class="trend-text"><span id="buero-trend">steigend</span> <span class="hourly-trend" id="buero-hourly">(+0.3°/h)</span></span>
-        </div>
-        <div class="co2-inner-box">
-          <div class="co2-title">CO₂</div>
-          <div class="co2-val" id="buero-co2">522</div>
-          <div class="co2-badge">ppm</div>
-        </div>
-        <div class="humidity-text"><span class="hum-val" id="buero-hum-val">54 %</span> Luftfeuchte</div>
-      </div>
-
+  <div class="slider-container" id="slider">
+    <!-- SEITE 1: NETATMO SENSOREN -->
+    <div class="page" id="page1">
+      <div id="cards"></div>
     </div>
 
-    <!-- MITTLERE SPALTE -->
-    <div class="center-column">
-      
-      <div class="border-box top-center">
-        <div class="forecast-title">3-Tage Vorhersage (Nohfelden-Eiweiler)</div>
-        
-        <!-- 3-TAGE-VORHERSAGE -->
-        <div class="forecast-days-container">
-          <div class="day-item">
-            <span class="day-name">Heute</span>
-            <span class="mono-symbol" id="fc-icon-0">&#9728;</span>
-            <span class="day-temp"><span id="fc-max-0">26°</span> / <span id="fc-min-0">16°</span></span>
-          </div>
-          <div style="border-left: 1px solid #000; height: 35px;"></div>
-          <div class="day-item">
-            <span class="day-name" id="fc-day-1">Morgen</span>
-            <span class="mono-symbol" id="fc-icon-1">&#9729;</span>
-            <span class="day-temp"><span id="fc-max-1">24°</span> / <span id="fc-min-1">15°</span></span>
-          </div>
-          <div style="border-left: 1px solid #000; height: 35px;"></div>
-          <div class="day-item">
-            <span class="day-name" id="fc-day-2">Überm.</span>
-            <span class="mono-symbol" id="fc-icon-2">&#9748;</span>
-            <span class="day-temp"><span id="fc-max-2">21°</span> / <span id="fc-min-2">13°</span></span>
-          </div>
-        </div>
-
-        <div class="astro-info-row">
-          <div>
-            <b id="sunrise-time">06:24</b> Sonnenaufg.<br>
-            <b id="sunset-time">20:48</b> Sonnenunterg.<br>
-            <small>Mond: Zunehmende Sichel | Sternzeichen: Löwe</small>
-          </div>
-          <div style="text-align: right;">
-            WLAN: <b>-76dBm</b><br>
-            Akku: <b>100% (3.3V)</b>
-          </div>
-        </div>
-      </div>
-
-      <div class="border-box bottom-center">
-        
-        <div style="font-size: 11px; font-weight: bold; text-align: center; border-bottom: 1px dashed #aaa; padding-bottom: 1px;">5 Stunden Trend</div>
-        
-        <div class="meteo-5h-container">
-          <div class="meteo-hour-item">
-            <span class="meteo-time" id="m-time-0">12:00</span>
-            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-0">&#9728;</span>
-            <span class="meteo-temp" id="m-temp-0">24°</span>
-          </div>
-          <div class="meteo-hour-item">
-            <span class="meteo-time" id="m-time-1">13:00</span>
-            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-1">&#9728;</span>
-            <span class="meteo-temp" id="m-temp-1">25°</span>
-          </div>
-          <div class="meteo-hour-item">
-            <span class="meteo-time" id="m-time-2">14:00</span>
-            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-2">&#9729;</span>
-            <span class="meteo-temp" id="m-temp-2">25°</span>
-          </div>
-          <div class="meteo-hour-item">
-            <span class="meteo-time" id="m-time-3">15:00</span>
-            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-3">&#9729;</span>
-            <span class="meteo-temp" id="m-temp-3">23°</span>
-          </div>
-          <div class="meteo-hour-item">
-            <span class="meteo-time" id="m-time-4">16:00</span>
-            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-4">&#9748;</span>
-            <span class="meteo-temp" id="m-temp-4">21°</span>
-          </div>
-        </div>
-
-        <div style="display: flex; justify-content: space-between; font-size: 11px; border-top: 1px dashed #aaa; padding-top: 2px;">
-          <div><b>Wind:</b> <span id="wind-val">2.0 m/s WSW</span></div>
-          <div><b>Regen:</b> <span id="rain-val">0 mm/24h</span></div>
-        </div>
-
-        <div class="date-display">
-          <div class="date-main" id="full-date">Montag, 17. August 2026</div>
-          <div class="date-sub" id="update-info">aktualisiert: 11:06:36</div>
-        </div>
-      </div>
-
+    <!-- SEITE 2: REGENSENSOR & OPEN-METEO -->
+    <div class="page" id="page2">
+      <div id="forecast-cards" style="display: flex; flex-direction: column; gap: 12px; width: 100%;"></div>
     </div>
+  </div>
 
-    <!-- RECHTE SPALTE -->
-    <div class="side-column">
-      
-      <!-- AUSSENBEREICH -->
-      <div class="border-box room-card">
-        <div class="room-title">Außenbereich</div>
-        <div class="room-temp-group">
-          <div class="temp-display">
-            <span class="temp-val-num" id="out-temp-num">24.4</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
-          </div>
-          <span class="trend-text"><span id="out-trend">steigend</span> <span class="hourly-trend" id="out-hourly">(+0.5°/h)</span></span>
-        </div>
-        
-        <div class="co2-inner-box">
-          <div class="co2-title">Luftdruck &#9654;</div>
-          <div class="co2-val" id="pressure-val" style="font-size: 26px;">1014</div>
-          <div class="co2-badge">hPa</div>
-        </div>
-        
-        <div class="humidity-text"><span class="hum-val" id="out-hum-val">65 %</span> Luftfeuchte</div>
-      </div>
-
-      <!-- OBERGESCHOSS -->
-      <div class="border-box room-card">
-        <div class="room-title">Obergeschoß</div>
-        <div class="room-temp-group">
-          <div class="temp-display">
-            <span class="temp-val-num" id="og-temp-num">26.4</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
-          </div>
-          <span class="trend-text"><span id="og-trend">steigend</span> <span class="hourly-trend" id="og-hourly">(+0.2°/h)</span></span>
-        </div>
-        <div class="co2-inner-box">
-          <div class="co2-title">CO₂</div>
-          <div class="co2-val" id="og-co2">484</div>
-          <div class="co2-badge">ppm</div>
-        </div>
-        <div class="humidity-text"><span class="hum-val" id="og-hum-val">49 %</span> Luftfeuchte</div>
-      </div>
-
-    </div>
-
+  <div class="navigation-dots">
+    <div class="dot active" onclick="scrollToPage(0)"></div>
+    <div class="dot" onclick="scrollToPage(1)"></div>
   </div>
 
   <script>
-    function getTrendText(trend) {
-      if (trend === 'up') return 'steigend';
-      if (trend === 'down') return 'fallend';
-      return 'beständig';
+    function getTrendIcon(trend) {
+      if (trend === 'up') return '<span class="trend" style="color: #ef4444;">▲</span>';
+      if (trend === 'down') return '<span class="trend" style="color: #38bdf8;">▼</span>';
+      return '<span class="trend" style="color: #94a3b8;">▶</span>';
     }
 
-    function getWeatherIcon(code) {
-      if (code === 0) return '&#9728;'; 
-      if (code >= 1 && code <= 3) return '&#9729;'; 
-      if (code >= 51) return '&#9748;'; 
-      return '&#9729;';
+    function getBatteryBadge(percent) {
+      if (percent === undefined || percent === null) return '';
+      const isLow = percent <= 20;
+      return `<div class="battery-badge ${isLow ? 'low' : ''}">🔋 ${percent}%</div>`;
     }
 
-    async function loadEiweilerForecast() {
-      try {
-        const url = 'https://api.open-meteo.com/v1/forecast?latitude=49.563&longitude=7.022&daily=temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset&hourly=temperature_2m,weathercode&timezone=Europe%2FBerlin';
-        const res = await fetch(url);
-        const data = await res.json();
-
-        for (let i = 0; i < 3; i++) {
-          if (document.getElementById(`fc-max-${i}`)) {
-            document.getElementById(`fc-max-${i}`).innerText = Math.round(data.daily.temperature_2m_max[i]) + '°';
-            document.getElementById(`fc-min-${i}`).innerText = Math.round(data.daily.temperature_2m_min[i]) + '°';
-            document.getElementById(`fc-icon-${i}`).innerHTML = getWeatherIcon(data.daily.weathercode[i]);
-          }
-        }
-
-        if (data.daily.sunrise[0]) {
-          document.getElementById('sunrise-time').innerText = data.daily.sunrise[0].substring(11, 16);
-          document.getElementById('sunset-time').innerText = data.daily.sunset[0].substring(11, 16);
-        }
-
-        const currentHour = new Date().getHours();
-        for (let i = 0; i < 5; i++) {
-          const hourIndex = currentHour + i;
-          if (document.getElementById(`m-time-${i}`)) {
-            document.getElementById(`m-time-${i}`).innerText = `${(hourIndex) % 24}:00`;
-            document.getElementById(`m-temp-${i}`).innerText = Math.round(data.hourly.temperature_2m[hourIndex]) + '°';
-            document.getElementById(`m-icon-${i}`).innerHTML = getWeatherIcon(data.hourly.weathercode[hourIndex]);
-          }
-        }
-      } catch (e) {
-        console.error("Fehler beim Abrufen der Nohfelden-Eiweiler Daten:", e);
+    function getWeatherInfo(code) {
+      switch (code) {
+        case 0:  return { desc: "Klar / Sonnig", icon: "☀️" };
+        case 1:  return { desc: "Überwiegend klar", icon: "🌤️" };
+        case 2:  return { desc: "Teilweise bewölkt", icon: "⛅" };
+        case 3:  return { desc: "Bedeckt", icon: "☁️" };
+        case 45: case 48: return { desc: "Nebel", icon: "🌫️" };
+        case 51: case 53: case 55: return { desc: "Nieselregen", icon: "🌦️" };
+        case 61: case 63: case 65: return { desc: "Regen", icon: "🌧️" };
+        case 71: case 73: case 75: return { desc: "Schneefall", icon: "❄️" };
+        case 80: case 81: case 82: return { desc: "Regenschauer", icon: "🌧️" };
+        case 95: return { desc: "Gewitter", icon: "🌩️" };
+        default: return { desc: "Unbekannt (" + code + ")", icon: "🌡️" };
       }
+    }
+
+    function getDayName(dateStr) {
+      const date = new Date(dateStr);
+      return date.toLocaleDateString('de-DE', { weekday: 'short' });
     }
 
     async function loadData() {
       try {
-        const res = await fetch('data.json?t=' + new Date().getTime());
+        const res = await fetch('data.json');
+        if (!res.ok) throw new Error("HTTP Fehler " + res.status);
+
         const data = await res.json();
+        document.getElementById('timestamp-text').innerText = `Zuletzt aktualisiert: ${data.timestamp || '--:--'} Uhr`;
 
-        const now = new Date();
-        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
-        document.getElementById('full-date').innerText = now.toLocaleDateString('de-DE', options);
-        if(data.timestamp) document.getElementById('update-info').innerText = `aktualisiert: ${data.timestamp}`;
+        // ================= SEITE 1: NETATMO SENSOREN =================
+        const wrapper = document.getElementById('cards');
+        wrapper.innerHTML = '';
 
-        // Wohnzimmer
-        if(data.wohnzimmer) {
-          document.getElementById('wz-temp-num').innerText = data.wohnzimmer.temp ?? '--';
-          document.getElementById('wz-hum-val').innerText = (data.wohnzimmer.hum ?? '--') + ' %';
-          document.getElementById('wz-co2').innerText = data.wohnzimmer.co2 ?? '---';
-          document.getElementById('wz-trend').innerText = getTrendText(data.wohnzimmer.trend);
-          if(data.wohnzimmer.hourly !== undefined) document.getElementById('wz-hourly').innerText = `(${data.wohnzimmer.hourly > 0 ? '+' : ''}${data.wohnzimmer.hourly}°/h)`;
+        if (data.draussen) {
+          const druckGerundet = data.druck?.val != null ? Math.round(data.druck.val) : '--';
+          wrapper.innerHTML += `
+            <div class="card blue">
+              <div class="card-icon">☀️</div>
+              <div class="card-content">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <h3>Außenbereich</h3>
+                    <p>Außensensor</p>
+                  </div>
+                  ${getBatteryBadge(data.draussen.battery)}
+                </div>
+                <div class="metrics-box">
+                  <div class="metric">
+                    <span class="metric-label">Temp</span>
+                    <span class="metric-value">${data.draussen.temp ?? '--'} °C ${getTrendIcon(data.draussen.trend)}</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">Feuchte</span>
+                    <span class="metric-value">${data.draussen.hum ?? '--'} %</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">Druck</span>
+                    <span class="metric-value">${druckGerundet} hPa ${getTrendIcon(data.druck?.trend)}</span>
+                  </div>
+                </div>
+              </div>
+            </div>`;
         }
 
-        // Büro
+        if (data.wohnzimmer) {
+          wrapper.innerHTML += `
+            <div class="card orange">
+              <div class="card-icon">📻</div>
+              <div class="card-content">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <h3>Wohnzimmer</h3>
+                    <p>Hauptmodul</p>
+                  </div>
+                </div>
+                <div class="metrics-box">
+                  <div class="metric">
+                    <span class="metric-label">Temp</span>
+                    <span class="metric-value">${data.wohnzimmer.temp ?? '--'} °C ${getTrendIcon(data.wohnzimmer.trend)}</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">Feuchte</span>
+                    <span class="metric-value">${data.wohnzimmer.hum ?? '--'} %</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">CO₂</span>
+                    <span class="metric-value">${data.wohnzimmer.co2 ?? '--'} ppm</span>
+                  </div>
+                </div>
+              </div>
+            </div>`;
+        }
+
         const bueroData = data.buero || data.firma;
-        if(bueroData) {
-          document.getElementById('buero-temp-num').innerText = bueroData.temp ?? '--';
-          document.getElementById('buero-hum-val').innerText = (bueroData.hum ?? '--') + ' %';
-          document.getElementById('buero-co2').innerText = bueroData.co2 ?? '---';
-          document.getElementById('buero-trend').innerText = getTrendText(bueroData.trend);
-          if(bueroData.hourly !== undefined) document.getElementById('buero-hourly').innerText = `(${bueroData.hourly > 0 ? '+' : ''}${bueroData.hourly}°/h)`;
+        if (bueroData) {
+          wrapper.innerHTML += `
+            <div class="card purple">
+              <div class="card-icon">🏢</div>
+              <div class="card-content">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <h3>Büro</h3>
+                    <p>Arbeitszimmer</p>
+                  </div>
+                  ${getBatteryBadge(bueroData.battery)}
+                </div>
+                <div class="metrics-box">
+                  <div class="metric">
+                    <span class="metric-label">Temp</span>
+                    <span class="metric-value">${bueroData.temp ?? '--'} °C ${getTrendIcon(bueroData.trend)}</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">Feuchte</span>
+                    <span class="metric-value">${bueroData.hum ?? '--'} %</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">CO₂</span>
+                    <span class="metric-value">${bueroData.co2 ?? '--'} ppm</span>
+                  </div>
+                </div>
+              </div>
+            </div>`;
         }
 
-        // Obergeschoss
-        if(data.og) {
-          document.getElementById('og-temp-num').innerText = data.og.temp ?? '--';
-          document.getElementById('og-hum-val').innerText = (data.og.hum ?? '--') + ' %';
-          document.getElementById('og-co2').innerText = data.og.co2 ?? '---';
-          document.getElementById('og-trend').innerText = getTrendText(data.og.trend);
-          if(data.og.hourly !== undefined) document.getElementById('og-hourly').innerText = `(${data.og.hourly > 0 ? '+' : ''}${data.og.hourly}°/h)`;
+        if (data.og) {
+          wrapper.innerHTML += `
+            <div class="card green">
+              <div class="card-icon">🏠</div>
+              <div class="card-content">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <h3>Obergeschoss</h3>
+                    <p>Zusatzmodul OG</p>
+                  </div>
+                  ${getBatteryBadge(data.og.battery)}
+                </div>
+                <div class="metrics-box">
+                  <div class="metric">
+                    <span class="metric-label">Temp</span>
+                    <span class="metric-value">${data.og.temp ?? '--'} °C ${getTrendIcon(data.og.trend)}</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">Feuchte</span>
+                    <span class="metric-value">${data.og.hum ?? '--'} %</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">CO₂</span>
+                    <span class="metric-value">${data.og.co2 ?? '--'} ppm</span>
+                  </div>
+                </div>
+              </div>
+            </div>`;
         }
 
-        // Außenbereich
-        if(data.draussen) {
-          document.getElementById('out-temp-num').innerText = data.draussen.temp ?? '--';
-          document.getElementById('out-hum-val').innerText = (data.draussen.hum ?? '--') + ' %';
-          document.getElementById('out-trend').innerText = getTrendText(data.draussen.trend);
-          if(data.draussen.hourly !== undefined) document.getElementById('out-hourly').innerText = `(${data.draussen.hourly > 0 ? '+' : ''}${data.draussen.hourly}°/h)`;
+        // ================= SEITE 2: REGENSENSOR & OPEN-METEO =================
+        const forecastWrapper = document.getElementById('forecast-cards');
+        forecastWrapper.innerHTML = '';
+
+        if (data.regen) {
+          const rainCurrent = data.regen.rain ?? 0;
+          const sum1h = data.regen.sum_1h ?? 0;
+          const sum24h = data.regen.sum_24h ?? 0;
+
+          forecastWrapper.innerHTML += `
+            <div class="card blue">
+              <div class="card-icon">🌧️</div>
+              <div class="card-content">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <h3>Regensensor</h3>
+                    <p>Netatmo Regenmesser</p>
+                  </div>
+                  ${getBatteryBadge(data.regen.battery)}
+                </div>
+                <div class="metrics-box">
+                  <div class="metric">
+                    <span class="metric-label">Aktuell</span>
+                    <span class="metric-value" style="color: #38bdf8;">${rainCurrent} mm/h</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">Letzte Std</span>
+                    <span class="metric-value">${sum1h} mm</span>
+                  </div>
+                  <div class="metric">
+                    <span class="metric-label">24 Std</span>
+                    <span class="metric-value">${sum24h} mm</span>
+                  </div>
+                </div>
+              </div>
+            </div>`;
         }
-        if(data.druck) {
-          document.getElementById('pressure-val').innerText = Math.round(data.druck.val || 1014);
+
+        if (data.vorhersage && data.vorhersage.daily) {
+          const daily = data.vorhersage.daily;
+
+          let dailyHTML = `
+            <div class="card green">
+              <div class="card-icon">📅</div>
+              <div class="card-content">
+                <div class="card-header">
+                  <div class="card-title-group">
+                    <h3>3-Tage Vorhersage</h3>
+                    <p>Nohfelden-Eiweiler</p>
+                  </div>
+                </div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">`;
+
+          for (let i = 0; i < daily.time.length && i < 3; i++) {
+            const dayName = getDayName(daily.time[i]);
+            const wInfo = getWeatherInfo(daily.weathercode[i]);
+            const max = Math.round(daily.temperature_2m_max[i]);
+            const min = Math.round(daily.temperature_2m_min[i]);
+
+            dailyHTML += `
+              <div class="metrics-box" style="padding: 6px 10px;">
+                <span style="font-weight: 600; width: 45px;">${dayName}</span>
+                <span style="font-size: 0.9rem;">${wInfo.icon}</span>
+                <span style="font-size: 0.75rem; color: #94a3b8; flex: 1; margin-left: 6px;">${wInfo.desc}</span>
+                <span style="font-weight: 700; font-size: 0.8rem;">${max}° / <span style="color: #38bdf8;">${min}°</span></span>
+              </div>`;
+          }
+
+          dailyHTML += `</div></div></div>`;
+          forecastWrapper.innerHTML += dailyHTML;
+
+          if (data.vorhersage.hourly) {
+            const hourly = data.vorhersage.hourly;
+            const now = new Date();
+            now.setMinutes(0, 0, 0);
+
+            let hourlyHTML = `
+              <div class="card orange">
+                <div class="card-icon">⏱️</div>
+                <div class="card-content">
+                  <div class="card-header">
+                    <div class="card-title-group">
+                      <h3>Stündlicher Trend</h3>
+                      <p>Nächste 5 Stunden</p>
+                    </div>
+                  </div>
+                  <div style="display: flex; flex-direction: column; gap: 4px;">`;
+
+            let count = 0;
+            for (let i = 0; i < hourly.time.length; i++) {
+              const itemTime = new Date(hourly.time[i]);
+
+              if (itemTime >= now && count < 5) {
+                const hourStr = itemTime.getHours().toString().padStart(2, '0') + ':00';
+                const temp = hourly.temperature_2m[i].toFixed(1);
+                const prob = hourly.precipitation_probability[i];
+                const rain = hourly.precipitation[i];
+                const wInfo = getWeatherInfo(hourly.weathercode[i]);
+
+                hourlyHTML += `
+                  <div class="metrics-box" style="padding: 5px 10px; font-size: 0.75rem;">
+                    <span style="font-weight: 600; width: 45px;">${hourStr}</span>
+                    <span>${wInfo.icon}</span>
+                    <span style="font-weight: 700; white-space: nowrap; margin-left: auto; margin-right: 12px;">${temp} °C</span>
+                    <span style="color: #94a3b8;">💧 ${prob}% ${rain > 0 ? `(${rain}mm)` : ''}</span>
+                  </div>`;
+                count++;
+              }
+            }
+
+            hourlyHTML += `</div></div></div>`;
+            forecastWrapper.innerHTML += hourlyHTML;
+          }
         }
 
       } catch (e) {
-        console.error("Fehler beim Laden lokaler Daten:", e);
+        console.error("Fehler beim Laden:", e);
+        document.getElementById('timestamp-text').innerText = "Fehler beim Laden der Daten!";
       }
     }
 
+    const slider = document.getElementById('slider');
+    const dots = document.querySelectorAll('.dot');
+
+    function scrollToPage(index) {
+      const pageWidth = slider.clientWidth;
+      slider.scrollTo({
+        left: pageWidth * index,
+        behavior: 'smooth'
+      });
+    }
+
+    slider.addEventListener('scroll', () => {
+      const pageIndex = Math.round(slider.scrollLeft / slider.clientWidth);
+      dots.forEach((dot, idx) => {
+        dot.classList.toggle('active', idx === pageIndex);
+      });
+    });
+
     loadData();
-    loadEiweilerForecast();
   </script>
 </body>
 </html>
