@@ -9,6 +9,9 @@ TOKEN_FILE = "token.json"
 CLIENT_ID = os.environ.get("NETATMO_CLIENT_ID", "").strip()
 CLIENT_SECRET = os.environ.get("NETATMO_CLIENT_SECRET", "").strip()
 
+# Zeitzone definieren
+tz = zoneinfo.ZoneInfo("Europe/Berlin")
+
 # 1. Refresh Token ermitteln
 refresh_token = None
 if os.path.exists(TOKEN_FILE):
@@ -63,6 +66,13 @@ def fmt(val):
 if devices:
     main_mod = devices[0]
     dash = main_mod.get("dashboard_data", {})
+
+    # NEU: Exakten Messzeitpunkt der Netatmo-Station auslesen
+    netatmo_ts = dash.get("time_utc")
+    if netatmo_ts:
+        output["netatmo_messzeit"] = datetime.fromtimestamp(netatmo_ts, tz=tz).strftime("%H:%M")
+    else:
+        output["netatmo_messzeit"] = "unbekannt"
 
     output["wohnzimmer"] = {
         "temp": fmt(dash.get("Temperature")),
@@ -143,8 +153,7 @@ try:
 except Exception as e:
     print(f"Fehler beim Laden von Open-Meteo: {e}")
 
-# Zeitstempel
-tz = zoneinfo.ZoneInfo("Europe/Berlin")
+# Uhrzeit des Abrufs (Skript-Laufzeit)
 output["timestamp"] = datetime.now(tz).strftime("%H:%M")
 
 with open("data.json", "w", encoding="utf-8") as f:
