@@ -66,3 +66,28 @@ jobs:
           git add data.json token.json display.png
           git commit -m "Automatisches Update" || exit 0
           git push
+
+      # 1. Playwright & Browser installieren
+      - name: Install Playwright
+        run: |
+          pip install playwright
+          playwright install chromium --with-deps
+
+      # 2. Skript für Daten + Screenshot ausführen
+      - name: Run scripts
+        env:
+          NETATMO_CLIENT_ID: ${{ secrets.NETATMO_CLIENT_ID }}
+          NETATMO_CLIENT_SECRET: ${{ secrets.NETATMO_CLIENT_SECRET }}
+          NETATMO_REFRESH_TOKEN: ${{ secrets.NETATMO_REFRESH_TOKEN }}
+        run: |
+          python main.py
+          python generate_image.py
+
+      # 3. data.json AND epaper.png zurück zu GitHub pushen
+      - name: Commit and push changes
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+          git add data.json token.json epaper.png
+          git commit -m "Auto-update data and epaper.png" || exit 0
+          git push
