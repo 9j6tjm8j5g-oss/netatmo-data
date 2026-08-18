@@ -2,8 +2,10 @@ name: Netatmo & E-Paper Update
 
 on:
   schedule:
-    - cron: '0 * * * *'  # Läuft einmal pro Stunde
-  workflow_dispatch:     # Manuelles Starten möglich
+    - cron: '*/10 * * * *'
+  workflow_dispatch:
+  repository_dispatch:          # <-- DAS MUSS VORHANDEN SEIN!
+    types: [cron_trigger]       # (oder ohne types)
 
 permissions:
   contents: write
