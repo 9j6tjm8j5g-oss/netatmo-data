@@ -67,7 +67,6 @@ if devices:
     main_mod = devices[0]
     dash = main_mod.get("dashboard_data", {})
 
-    # NEU: Exakten Messzeitpunkt der Netatmo-Station auslesen
     netatmo_ts = dash.get("time_utc")
     if netatmo_ts:
         output["netatmo_messzeit"] = datetime.fromtimestamp(netatmo_ts, tz=tz).strftime("%H:%M")
@@ -134,7 +133,7 @@ if devices:
         elif "og" in name or "obergeschoss" in name:
             output["og"] = mod_data
 
-# 4. Open-Meteo Wettervorhersage abrufen (Nohfelden-Eiweiler)
+# 4. Open-Meteo Wettervorhersage abrufen
 try:
     om_res = requests.get(
         "https://api.open-meteo.com/v1/forecast",
@@ -153,29 +152,7 @@ try:
 except Exception as e:
     print(f"Fehler beim Laden von Open-Meteo: {e}")
 
-# Uhrzeit des Abrufs (Skript-Laufzeit)
 output["timestamp"] = datetime.now(tz).strftime("%H:%M")
 
 with open("data.json", "w", encoding="utf-8") as f:
     json.dump(output, f, indent=2, ensure_ascii=False)
-from playwright.sync_api import sync_playwright
-
-def create_epaper_png():
-    with sync_playwright() as p:
-        # Browser starten
-        browser = p.chromium.launch()
-        # Bildschirmgröße exakt auf dein E-Paper anpassen (z. B. 800x480)
-        page = browser.new_page(viewport={"width": 800, "height": 480})
-        
-        # Deine GitHub Pages HTML-Seite aufrufen (oder eine lokale epaper.html)
-        page.goto("https://9j6tjm8j5g-oss.github.io/netatmo-data/epaper.html")
-        
-        # Warten, bis alles geladen ist (z. B. 2 Sekunden)
-        page.wait_for_timeout(2000)
-        
-        # Screenshot als epaper.png speichern
-        page.screenshot(path="epaper.png")
-        browser.close()
-
-if __name__ == "__main__":
-    create_epaper_png()
