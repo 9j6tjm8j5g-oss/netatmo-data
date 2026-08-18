@@ -76,7 +76,6 @@
       letter-spacing: -1px;
     }
 
-    /* Das Grad-Zeichen deutlich vergrößert und oben platziert */
     .degree-symbol {
       font-size: 34px;
       font-weight: normal;
@@ -84,7 +83,6 @@
       line-height: 0.9;
     }
 
-    /* Das 'C' klein und schlank wie auf dem Foto */
     .unit-c-group {
       font-size: 26px;
       font-weight: normal;
@@ -276,16 +274,16 @@
         <div class="room-title">Wohnzimmer</div>
         <div class="room-temp-group">
           <div class="temp-display">
-            <span class="temp-val-num" id="wz-temp-num">25.3</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
+            <span class="temp-val-num" id="wz-temp-num">--.-</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
           </div>
-          <span class="trend-text"><span id="wz-trend">beständig</span> <span class="hourly-trend" id="wz-hourly">(+0.0°/h)</span></span>
+          <span class="trend-text"><span id="wz-trend">---</span> <span class="hourly-trend" id="wz-hourly"></span></span>
         </div>
         <div class="co2-inner-box">
           <div class="co2-title">CO₂</div>
-          <div class="co2-val" id="wz-co2">451</div>
+          <div class="co2-val" id="wz-co2">---</div>
           <div class="co2-badge">ppm</div>
         </div>
-        <div class="humidity-text"><span class="hum-val" id="wz-hum-val">60 %</span> Luftfeuchte</div>
+        <div class="humidity-text"><span class="hum-val" id="wz-hum-val">-- %</span> Luftfeuchte</div>
       </div>
 
       <!-- BÜRO -->
@@ -293,16 +291,16 @@
         <div class="room-title">Büro</div>
         <div class="room-temp-group">
           <div class="temp-display">
-            <span class="temp-val-num" id="buero-temp-num">24.7</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
+            <span class="temp-val-num" id="buero-temp-num">--.-</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
           </div>
-          <span class="trend-text"><span id="buero-trend">steigend</span> <span class="hourly-trend" id="buero-hourly">(+0.3°/h)</span></span>
+          <span class="trend-text"><span id="buero-trend">---</span> <span class="hourly-trend" id="buero-hourly"></span></span>
         </div>
         <div class="co2-inner-box">
           <div class="co2-title">CO₂</div>
-          <div class="co2-val" id="buero-co2">522</div>
+          <div class="co2-val" id="buero-co2">---</div>
           <div class="co2-badge">ppm</div>
         </div>
-        <div class="humidity-text"><span class="hum-val" id="buero-hum-val">54 %</span> Luftfeuchte</div>
+        <div class="humidity-text"><span class="hum-val" id="buero-hum-val">-- %</span> Luftfeuchte</div>
       </div>
 
     </div>
@@ -318,26 +316,26 @@
           <div class="day-item">
             <span class="day-name">Heute</span>
             <span class="mono-symbol" id="fc-icon-0">&#9728;</span>
-            <span class="day-temp"><span id="fc-max-0">26°</span> / <span id="fc-min-0">16°</span></span>
+            <span class="day-temp"><span id="fc-max-0">--°</span> / <span id="fc-min-0">--°</span></span>
           </div>
           <div style="border-left: 1px solid #000; height: 35px;"></div>
           <div class="day-item">
             <span class="day-name" id="fc-day-1">Morgen</span>
             <span class="mono-symbol" id="fc-icon-1">&#9729;</span>
-            <span class="day-temp"><span id="fc-max-1">24°</span> / <span id="fc-min-1">15°</span></span>
+            <span class="day-temp"><span id="fc-max-1">--°</span> / <span id="fc-min-1">--°</span></span>
           </div>
           <div style="border-left: 1px solid #000; height: 35px;"></div>
           <div class="day-item">
             <span class="day-name" id="fc-day-2">Überm.</span>
             <span class="mono-symbol" id="fc-icon-2">&#9748;</span>
-            <span class="day-temp"><span id="fc-max-2">21°</span> / <span id="fc-min-2">13°</span></span>
+            <span class="day-temp"><span id="fc-max-2">--°</span> / <span id="fc-min-2">--°</span></span>
           </div>
         </div>
 
         <div class="astro-info-row">
           <div>
-            <b id="sunrise-time">06:24</b> Sonnenaufg.<br>
-            <b id="sunset-time">20:48</b> Sonnenunterg.<br>
+            <b id="sunrise-time">--:--</b> Sonnenaufg.<br>
+            <b id="sunset-time">--:--</b> Sonnenunterg.<br>
             <small>Mond: Zunehmende Sichel | Sternzeichen: Löwe</small>
           </div>
           <div style="text-align: right;">
@@ -353,29 +351,29 @@
         
         <div class="meteo-5h-container">
           <div class="meteo-hour-item">
-            <span class="meteo-time" id="m-time-0">12:00</span>
+            <span class="meteo-time" id="m-time-0">--:00</span>
             <span class="mono-symbol" style="font-size: 16px;" id="m-icon-0">&#9728;</span>
-            <span class="meteo-temp" id="m-temp-0">24°</span>
+            <span class="meteo-temp" id="m-temp-0">--°</span>
           </div>
           <div class="meteo-hour-item">
-            <span class="meteo-time" id="m-time-1">13:00</span>
+            <span class="meteo-time" id="m-time-1">--:00</span>
             <span class="mono-symbol" style="font-size: 16px;" id="m-icon-1">&#9728;</span>
-            <span class="meteo-temp" id="m-temp-1">25°</span>
+            <span class="meteo-temp" id="m-temp-1">--°</span>
           </div>
           <div class="meteo-hour-item">
-            <span class="meteo-time" id="m-time-2">14:00</span>
+            <span class="meteo-time" id="m-time-2">--:00</span>
             <span class="mono-symbol" style="font-size: 16px;" id="m-icon-2">&#9729;</span>
-            <span class="meteo-temp" id="m-temp-2">25°</span>
+            <span class="meteo-temp" id="m-temp-2">--°</span>
           </div>
           <div class="meteo-hour-item">
-            <span class="meteo-time" id="m-time-3">15:00</span>
+            <span class="meteo-time" id="m-time-3">--:00</span>
             <span class="mono-symbol" style="font-size: 16px;" id="m-icon-3">&#9729;</span>
-            <span class="meteo-temp" id="m-temp-3">23°</span>
+            <span class="meteo-temp" id="m-temp-3">--°</span>
           </div>
           <div class="meteo-hour-item">
-            <span class="meteo-time" id="m-time-4">16:00</span>
+            <span class="meteo-time" id="m-time-4">--:00</span>
             <span class="mono-symbol" style="font-size: 16px;" id="m-icon-4">&#9748;</span>
-            <span class="meteo-temp" id="m-temp-4">21°</span>
+            <span class="meteo-temp" id="m-temp-4">--°</span>
           </div>
         </div>
 
@@ -385,8 +383,8 @@
         </div>
 
         <div class="date-display">
-          <div class="date-main" id="full-date">Montag, 17. August 2026</div>
-          <div class="date-sub" id="update-info">aktualisiert: 11:06:36</div>
+          <div class="date-main" id="full-date">Lade Datum...</div>
+          <div class="date-sub" id="update-info">aktualisiert: --:--</div>
         </div>
       </div>
 
@@ -400,18 +398,18 @@
         <div class="room-title">Außenbereich</div>
         <div class="room-temp-group">
           <div class="temp-display">
-            <span class="temp-val-num" id="out-temp-num">24.4</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
+            <span class="temp-val-num" id="out-temp-num">--.-</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
           </div>
-          <span class="trend-text"><span id="out-trend">steigend</span> <span class="hourly-trend" id="out-hourly">(+0.5°/h)</span></span>
+          <span class="trend-text"><span id="out-trend">---</span> <span class="hourly-trend" id="out-hourly"></span></span>
         </div>
         
         <div class="co2-inner-box">
           <div class="co2-title">Luftdruck &#9654;</div>
-          <div class="co2-val" id="pressure-val" style="font-size: 26px;">1014</div>
+          <div class="co2-val" id="pressure-val" style="font-size: 26px;">----</div>
           <div class="co2-badge">hPa</div>
         </div>
         
-        <div class="humidity-text"><span class="hum-val" id="out-hum-val">65 %</span> Luftfeuchte</div>
+        <div class="humidity-text"><span class="hum-val" id="out-hum-val">-- %</span> Luftfeuchte</div>
       </div>
 
       <!-- OBERGESCHOSS -->
@@ -419,16 +417,16 @@
         <div class="room-title">Obergeschoß</div>
         <div class="room-temp-group">
           <div class="temp-display">
-            <span class="temp-val-num" id="og-temp-num">26.4</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
+            <span class="temp-val-num" id="og-temp-num">--.-</span><span class="degree-symbol">°</span><span class="unit-c-group">C</span>
           </div>
-          <span class="trend-text"><span id="og-trend">steigend</span> <span class="hourly-trend" id="og-hourly">(+0.2°/h)</span></span>
+          <span class="trend-text"><span id="og-trend">---</span> <span class="hourly-trend" id="og-hourly"></span></span>
         </div>
         <div class="co2-inner-box">
           <div class="co2-title">CO₂</div>
-          <div class="co2-val" id="og-co2">484</div>
+          <div class="co2-val" id="og-co2">---</div>
           <div class="co2-badge">ppm</div>
         </div>
-        <div class="humidity-text"><span class="hum-val" id="og-hum-val">49 %</span> Luftfeuchte</div>
+        <div class="humidity-text"><span class="hum-val" id="og-hum-val">-- %</span> Luftfeuchte</div>
       </div>
 
     </div>
@@ -478,57 +476,64 @@
           }
         }
       } catch (e) {
-        console.error("Fehler beim Abrufen der Nohfelden-Eiweiler Daten:", e);
+        console.error("Fehler bei Open-Meteo:", e);
       }
     }
 
     async function loadData() {
       try {
-        // Hier angepasst: fetch('data.json') ohne URL-Parameter ?t=
-        const res = await fetch('data.json');
+        // Frisches JSON laden (Cacheumgehung)
+        const res = await fetch('data.json?t=' + new Date().getTime());
         const data = await res.json();
 
+        // Aktuelles Datum dynamisch erzeugen
         const now = new Date();
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('full-date').innerText = now.toLocaleDateString('de-DE', options);
-        if(data.timestamp) document.getElementById('update-info').innerText = `aktualisiert: ${data.timestamp}`;
+
+        // Uhrzeit-Anzeige aktualisieren
+        if (data.netatmo_messzeit) {
+          document.getElementById('update-info').innerText = `aktualisiert: ${data.netatmo_messzeit}`;
+        } else if (data.timestamp) {
+          document.getElementById('update-info').innerText = `aktualisiert: ${data.timestamp}`;
+        }
 
         // Wohnzimmer
-        if(data.wohnzimmer) {
+        if (data.wohnzimmer) {
           document.getElementById('wz-temp-num').innerText = data.wohnzimmer.temp ?? '--';
           document.getElementById('wz-hum-val').innerText = (data.wohnzimmer.hum ?? '--') + ' %';
           document.getElementById('wz-co2').innerText = data.wohnzimmer.co2 ?? '---';
           document.getElementById('wz-trend').innerText = getTrendText(data.wohnzimmer.trend);
-          if(data.wohnzimmer.hourly !== undefined) document.getElementById('wz-hourly').innerText = `(${data.wohnzimmer.hourly > 0 ? '+' : ''}${data.wohnzimmer.hourly}°/h)`;
+          if (data.wohnzimmer.hourly !== undefined) document.getElementById('wz-hourly').innerText = `(${data.wohnzimmer.hourly > 0 ? '+' : ''}${data.wohnzimmer.hourly}°/h)`;
         }
 
         // Büro
         const bueroData = data.buero || data.firma;
-        if(bueroData) {
+        if (bueroData) {
           document.getElementById('buero-temp-num').innerText = bueroData.temp ?? '--';
           document.getElementById('buero-hum-val').innerText = (bueroData.hum ?? '--') + ' %';
           document.getElementById('buero-co2').innerText = bueroData.co2 ?? '---';
           document.getElementById('buero-trend').innerText = getTrendText(bueroData.trend);
-          if(bueroData.hourly !== undefined) document.getElementById('buero-hourly').innerText = `(${bueroData.hourly > 0 ? '+' : ''}${bueroData.hourly}°/h)`;
+          if (bueroData.hourly !== undefined) document.getElementById('buero-hourly').innerText = `(${bueroData.hourly > 0 ? '+' : ''}${bueroData.hourly}°/h)`;
         }
 
         // Obergeschoss
-        if(data.og) {
+        if (data.og) {
           document.getElementById('og-temp-num').innerText = data.og.temp ?? '--';
           document.getElementById('og-hum-val').innerText = (data.og.hum ?? '--') + ' %';
           document.getElementById('og-co2').innerText = data.og.co2 ?? '---';
           document.getElementById('og-trend').innerText = getTrendText(data.og.trend);
-          if(data.og.hourly !== undefined) document.getElementById('og-hourly').innerText = `(${data.og.hourly > 0 ? '+' : ''}${data.og.hourly}°/h)`;
+          if (data.og.hourly !== undefined) document.getElementById('og-hourly').innerText = `(${data.og.hourly > 0 ? '+' : ''}${data.og.hourly}°/h)`;
         }
 
         // Außenbereich
-        if(data.draussen) {
+        if (data.draussen) {
           document.getElementById('out-temp-num').innerText = data.draussen.temp ?? '--';
           document.getElementById('out-hum-val').innerText = (data.draussen.hum ?? '--') + ' %';
           document.getElementById('out-trend').innerText = getTrendText(data.draussen.trend);
-          if(data.draussen.hourly !== undefined) document.getElementById('out-hourly').innerText = `(${data.draussen.hourly > 0 ? '+' : ''}${data.draussen.hourly}°/h)`;
+          if (data.draussen.hourly !== undefined) document.getElementById('out-hourly').innerText = `(${data.draussen.hourly > 0 ? '+' : ''}${data.draussen.hourly}°/h)`;
         }
-        if(data.druck) {
+        if (data.druck) {
           document.getElementById('pressure-val').innerText = Math.round(data.druck.val || 1014);
         }
 
