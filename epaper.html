@@ -484,7 +484,8 @@
 
     async function loadData() {
       try {
-        const res = await fetch('data.json?t=' + new Date().getTime());
+        // Hier angepasst: fetch('data.json') ohne URL-Parameter ?t=
+        const res = await fetch('data.json');
         const data = await res.json();
 
         const now = new Date();
