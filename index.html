@@ -2,212 +2,308 @@
 <html lang="de">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Wetterstation Dashboard</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+  <title>Netatmo Wetter</title>
   <style>
     * {
       box-sizing: border-box;
       margin: 0;
       padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    html {
+      background-color: #3E4865;
+      height: 100%;
     }
 
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      background-color: #0f172a;
+      background: linear-gradient(135deg, #3E4865 0%, #3E4B65 100%);
+      background-attachment: fixed;
       color: #f8fafc;
+      min-height: 100vh;
+      min-height: 100dvh;
+      padding: calc(16px + env(safe-area-inset-top)) 20px calc(16px + env(safe-area-inset-bottom));
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-x: hidden;
+    }
+
+    .container {
+      max-width: 440px;
+      width: 100%;
       display: flex;
       flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
     }
 
     header {
-      padding: 12px 16px;
-      background-color: #1e293b;
-      border-bottom: 1px solid #334155;
-      text-align: center;
-      flex-shrink: 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
     }
 
-    header h1 {
-      font-size: 1.1rem;
-      font-weight: 600;
-      color: #f1f5f9;
+    .title-area h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
     }
 
-    header p {
-      font-size: 0.75rem;
+    .title-area p {
+      font-size: 0.8rem;
       color: #94a3b8;
       margin-top: 2px;
     }
 
-    .slider-container {
-      flex: 1;
+    .reload-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* === SLIDER & SEITEN-LAYOUT === */
+    .pages-slider {
       display: flex;
       overflow-x: auto;
       scroll-snap-type: x mandatory;
       scroll-behavior: smooth;
       -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; 
+      -ms-overflow-style: none;
+      width: 100%;
+      border-radius: 16px;
     }
 
-    .slider-container::-webkit-scrollbar {
+    .pages-slider::-webkit-scrollbar {
       display: none;
     }
 
     .page {
       flex: 0 0 100%;
-      width: 100%;
-      height: 100%;
+      min-width: 100%;
       scroll-snap-align: start;
-      padding: 12px;
-      overflow-y: auto;
+      scroll-snap-stop: always;
+      box-sizing: border-box;
+    }
+
+    #page1 {
       display: flex;
       flex-direction: column;
-      gap: 12px;
+      justify-content: center;
     }
 
-    .card {
-      background-color: #1e293b;
-      border-radius: 12px;
-      padding: 12px;
-      border-left: 4px solid #38bdf8;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.3);
-    }
-
-    .card.blue { border-left-color: #38bdf8; }
-    .card.orange { border-left-color: #fb923c; }
-    .card.purple { border-left-color: #c084fc; }
-    .card.green { border-left-color: #4ade80; }
-
-    .card-icon {
-      font-size: 1.8rem;
-      width: 40px;
-      text-align: center;
-    }
-
-    .card-content {
-      flex: 1;
-    }
-
-    .card-header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 6px;
-    }
-
-    .card-title-group h3 {
-      font-size: 0.95rem;
-      font-weight: 600;
-      color: #f1f5f9;
-    }
-
-    .card-title-group p {
-      font-size: 0.7rem;
-      color: #94a3b8;
-    }
-
-    .battery-badge {
-      font-size: 0.65rem;
-      padding: 2px 6px;
-      background-color: #334155;
-      border-radius: 10px;
-      color: #cbd5e1;
-    }
-
-    .battery-badge.low {
-      background-color: #7f1d1d;
-      color: #fca5a5;
-    }
-
-    .metrics-box {
-      display: flex;
-      justify-content: space-between;
-      background-color: #0f172a;
-      padding: 8px;
-      border-radius: 8px;
-      margin-top: 4px;
-    }
-
-    .metric {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      flex: 1;
-    }
-
-    .metric-label {
-      font-size: 0.65rem;
-      color: #94a3b8;
-      text-transform: uppercase;
-    }
-
-    .metric-value {
-      font-size: 0.85rem;
-      font-weight: 700;
-      color: #f8fafc;
-      margin-top: 2px;
-      display: flex;
-      align-items: center;
-      gap: 2px;
-    }
-
-    .trend {
-      font-size: 0.7rem;
-    }
-
-    .navigation-dots {
+    /* === SEITEN-NAVIGATION (DOTS) === */
+    .page-dots {
       display: flex;
       justify-content: center;
-      align-items: center;
       gap: 8px;
-      padding: 8px;
-      background-color: #1e293b;
-      border-top: 1px solid #334155;
-      flex-shrink: 0;
+      margin-top: 16px;
+      margin-bottom: 6px;
     }
 
     .dot {
       width: 8px;
       height: 8px;
       border-radius: 50%;
-      background-color: #475569;
+      background: rgba(255, 255, 255, 0.2);
       cursor: pointer;
       transition: all 0.3s ease;
     }
 
     .dot.active {
-      background-color: #38bdf8;
+      background: #38bdf8;
       width: 20px;
       border-radius: 4px;
+    }
+
+    /* === KARTEN STYLES === */
+    .cards-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+      align-items: center;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+    }
+
+    .card.blue::before { background-color: #38bdf8; }
+    .card.orange::before { background-color: #f97316; }
+    .card.purple::before { background-color: #a855f7; }
+    .card.green::before { background-color: #22c55e; }
+
+    .card-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+    }
+
+    .card-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .card-title-group h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .card-title-group p {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .battery-badge {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 7px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .battery-badge.low {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .metrics-box {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .metric {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .metric-label {
+      font-size: 0.6rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+
+    .metric-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #ffffff;
+    }
+
+    .trend {
+      font-size: 0.7rem;
+    }
+
+    .footer-status {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #22c55e;
+      border-radius: 50%;
     }
   </style>
 </head>
 <body>
 
-  <header>
-    <h1>Wetterstation</h1>
-    <p id="timestamp-text">Lade Daten...</p>
-  </header>
+  <div class="container">
+    <header>
+      <div class="title-area">
+        <h1>Netatmo Wetter</h1>
+        <p>Live-Klimadaten & Prognose</p>
+      </div>
+      <button class="reload-btn" onclick="loadData()">↻</button>
+    </header>
 
-  <div class="slider-container" id="slider">
-    <!-- SEITE 1: NETATMO SENSOREN -->
-    <div class="page" id="page1">
-      <div id="cards"></div>
+    <!-- SLIDER WRAPPER -->
+    <div class="pages-slider" id="slider">
+      
+      <!-- SEITE 1: Netatmo Wetterkarten -->
+      <div class="page" id="page1">
+        <div class="cards-wrapper" id="cards">
+          <!-- Wird per JS befüllt -->
+        </div>
+      </div>
+
+      <!-- SEITE 2: Regensensor & Open-Meteo Vorhersage -->
+      <div class="page" id="page2">
+        <div class="cards-wrapper" id="forecast-cards">
+          <!-- Wird per JS befüllt -->
+        </div>
+      </div>
+
     </div>
 
-    <!-- SEITE 2: REGENSENSOR & OPEN-METEO -->
-    <div class="page" id="page2">
-      <div id="forecast-cards" style="display: flex; flex-direction: column; gap: 12px; width: 100%;"></div>
+    <!-- PUNKTE-NAVIGATION (DOTS) -->
+    <div class="page-dots">
+      <div class="dot active" onclick="scrollToPage(0)"></div>
+      <div class="dot" onclick="scrollToPage(1)"></div>
     </div>
-  </div>
 
-  <div class="navigation-dots">
-    <div class="dot active" onclick="scrollToPage(0)"></div>
-    <div class="dot" onclick="scrollToPage(1)"></div>
+    <div class="footer-status">
+      <span class="status-dot"></span>
+      <span id="timestamp-text">Zuletzt aktualisiert: --:-- Uhr</span>
+    </div>
   </div>
 
   <script>
@@ -246,10 +342,9 @@
 
     async function loadData() {
       try {
-        const res = await fetch('data.json');
-        if (!res.ok) throw new Error("HTTP Fehler " + res.status);
-
+        const res = await fetch('data.json?t=' + new Date().getTime());
         const data = await res.json();
+
         document.getElementById('timestamp-text').innerText = `Zuletzt aktualisiert: ${data.timestamp || '--:--'} Uhr`;
 
         // ================= SEITE 1: NETATMO SENSOREN =================
@@ -316,31 +411,30 @@
             </div>`;
         }
 
-        const bueroData = data.buero || data.firma;
-        if (bueroData) {
+        if (data.firma) {
           wrapper.innerHTML += `
             <div class="card purple">
               <div class="card-icon">🏢</div>
               <div class="card-content">
                 <div class="card-header">
                   <div class="card-title-group">
-                    <h3>Büro</h3>
-                    <p>Arbeitszimmer</p>
+                    <h3>Firma</h3>
+                    <p>Büro</p>
                   </div>
-                  ${getBatteryBadge(bueroData.battery)}
+                  ${getBatteryBadge(data.firma.battery)}
                 </div>
                 <div class="metrics-box">
                   <div class="metric">
                     <span class="metric-label">Temp</span>
-                    <span class="metric-value">${bueroData.temp ?? '--'} °C ${getTrendIcon(bueroData.trend)}</span>
+                    <span class="metric-value">${data.firma.temp ?? '--'} °C ${getTrendIcon(data.firma.trend)}</span>
                   </div>
                   <div class="metric">
                     <span class="metric-label">Feuchte</span>
-                    <span class="metric-value">${bueroData.hum ?? '--'} %</span>
+                    <span class="metric-value">${data.firma.hum ?? '--'} %</span>
                   </div>
                   <div class="metric">
                     <span class="metric-label">CO₂</span>
-                    <span class="metric-value">${bueroData.co2 ?? '--'} ppm</span>
+                    <span class="metric-value">${data.firma.co2 ?? '--'} ppm</span>
                   </div>
                 </div>
               </div>
@@ -381,6 +475,7 @@
         const forecastWrapper = document.getElementById('forecast-cards');
         forecastWrapper.innerHTML = '';
 
+        // 1. REGENSENSOR
         if (data.regen) {
           const rainCurrent = data.regen.rain ?? 0;
           const sum1h = data.regen.sum_1h ?? 0;
@@ -415,6 +510,7 @@
             </div>`;
         }
 
+        // 2. OPEN-METEO PROGNOSE
         if (data.vorhersage && data.vorhersage.daily) {
           const daily = data.vorhersage.daily;
 
@@ -448,6 +544,7 @@
           dailyHTML += `</div></div></div>`;
           forecastWrapper.innerHTML += dailyHTML;
 
+          // Karte 3: Stündlicher Trend
           if (data.vorhersage.hourly) {
             const hourly = data.vorhersage.hourly;
             const now = new Date();
@@ -494,10 +591,10 @@
 
       } catch (e) {
         console.error("Fehler beim Laden:", e);
-        document.getElementById('timestamp-text').innerText = "Fehler beim Laden der Daten!";
       }
     }
 
+    // === SLIDER & NAVIGATION ===
     const slider = document.getElementById('slider');
     const dots = document.querySelectorAll('.dot');
 
