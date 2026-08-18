@@ -39,7 +39,7 @@
   },
   "regen": {
     "rain": 0,
-    "sum_1h": 0.101,
+    "sum_1h": 0,
     "sum_24h": 0.1,
     "battery": 83
   },
@@ -52,7 +52,7 @@
   "vorhersage": {
     "latitude": 49.576,
     "longitude": 7.0179996,
-    "generationtime_ms": 11.185288429260254,
+    "generationtime_ms": 5.38480281829834,
     "utc_offset_seconds": 7200,
     "timezone": "Europe/Berlin",
     "timezone_abbreviation": "GMT+2",
@@ -465,5 +465,5 @@
       ]
     }
   },
-  "timestamp": "01:32"
+  "timestamp": "01:38"
 }
