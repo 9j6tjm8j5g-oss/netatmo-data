@@ -2,10 +2,10 @@ name: Netatmo & E-Paper Update
 
 on:
   schedule:
-    - cron: '*/10 * * * *'
+    - cron: '8,18,28,38,48,58 * * * *'
   workflow_dispatch:
-  repository_dispatch:          # <-- DAS MUSS VORHANDEN SEIN!
-    types: [cron_trigger]       # (oder ohne types)
+  repository_dispatch:
+    types: [cron_trigger]
 
 permissions:
   contents: write
@@ -22,72 +22,24 @@ jobs:
         with:
           python-version: '3.x'
 
-      - name: Python Pakete installieren
-        run: pip install requests
-
-      - name: Netatmo Daten abrufen
-        env:
-          NETATMO_CLIENT_ID: ${{ secrets.NETATMO_CLIENT_ID }}
-          NETATMO_CLIENT_SECRET: ${{ secrets.NETATMO_CLIENT_SECRET }}
-          NETATMO_REFRESH_TOKEN: ${{ secrets.NETATMO_REFRESH_TOKEN }}
-        run: python fetch_netatmo.py
-
-      - name: Node.js & Playwright einrichten
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-
-      - name: Playwright installieren
+      - name: Python Pakete & Playwright installieren
         run: |
-          npm install playwright
-          npx playwright install chromium --with-deps
-
-      - name: Screenshot erstellen
-        run: |
-          node -e '
-          const { chromium } = require("playwright");
-          const path = require("path");
-
-          (async () => {
-            const browser = await chromium.launch();
-            const page = await browser.newPage({ viewport: { width: 800, height: 480 } });
-            const filePath = path.join(process.cwd(), "epaper.html");
-            await page.goto("file://" + filePath, { waitUntil: "domcontentloaded" });
-            await page.waitForTimeout(3000);
-            await page.screenshot({ path: "display.png", type: "png" });
-            await browser.close();
-          })();
-          '
-
-      - name: Änderungen speichern
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-          git add data.json token.json display.png
-          git commit -m "Automatisches Update" || exit 0
-          git push
-
-      # 1. Playwright & Browser installieren
-      - name: Install Playwright
-        run: |
-          pip install playwright
+          pip install requests playwright
           playwright install chromium --with-deps
 
-      # 2. Skript für Daten + Screenshot ausführen
-      - name: Run scripts
+      - name: Netatmo Daten abrufen & Bild erzeugen
         env:
           NETATMO_CLIENT_ID: ${{ secrets.NETATMO_CLIENT_ID }}
           NETATMO_CLIENT_SECRET: ${{ secrets.NETATMO_CLIENT_SECRET }}
           NETATMO_REFRESH_TOKEN: ${{ secrets.NETATMO_REFRESH_TOKEN }}
         run: |
-          python main.py
+          python fetch_netatmo.py
           python generate_image.py
 
-      # 3. data.json AND epaper.png zurück zu GitHub pushen
-      - name: Commit and push changes
+      - name: Änderungen speichern & pushen
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
           git add data.json token.json epaper.png
-          git commit -m "Auto-update data and epaper.png" || exit 0
+          git commit -m "Automatisches Update" || exit 0
           git push
