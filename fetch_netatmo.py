@@ -69,7 +69,6 @@ try:
                 "trend": m_dash.get("temp_trend", "stable")
             }
             
-            # Direkter Typ-Check: NAModule1 ist bei Netatmo IMMER der Außensensor
             if mod_type == "NAModule1" or any(x in name for x in ["au", "drau", "out"]):
                 output["draussen"] = mod_data
             elif any(x in name for x in ["bür", "buer", "firm"]):
@@ -80,7 +79,7 @@ try:
 except Exception as e:
     print(f"Fehler bei Netatmo: {e}")
 
-# 2. Open-Meteo Wetterdaten (inkl. stündlichem Trend, Wind & Regen)
+# 2. Open-Meteo Wetterdaten (inkl. Niederschlagswahrscheinlichkeit & Menge)
 try:
     om_res = requests.get(
         "https://api.open-meteo.com/v1/forecast",
@@ -88,7 +87,7 @@ try:
             "latitude": 49.563,
             "longitude": 7.022,
             "daily": "temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset",
-            "hourly": "temperature_2m,weathercode",
+            "hourly": "temperature_2m,weathercode,precipitation_probability,precipitation",
             "current": "wind_speed_10m,wind_direction_10m,precipitation",
             "timezone": "Europe/Berlin",
             "forecast_days": 3
