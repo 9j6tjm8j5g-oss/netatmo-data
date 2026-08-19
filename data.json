@@ -2,20 +2,20 @@
   "wohnzimmer": {
     "temp": 23.3,
     "hum": 76,
-    "co2": 425,
+    "co2": 423,
     "trend": "stable"
   },
   "buero": {
     "temp": 24.3,
     "hum": 65,
-    "co2": 552,
+    "co2": 529,
     "trend": "stable",
-    "battery": 87
+    "battery": 88
   },
   "og": {
     "temp": 24.3,
     "hum": 65,
-    "co2": 427,
+    "co2": 432,
     "trend": "stable",
     "battery": 54
   },
@@ -26,7 +26,7 @@
     "battery": 31
   },
   "druck": {
-    "val": 1003
+    "val": 1002.9
   },
   "regen": {
     "rain": 0,
@@ -37,7 +37,7 @@
   "vorhersage": {
     "latitude": 49.558,
     "longitude": 7.0179996,
-    "generationtime_ms": 3.124237060546875,
+    "generationtime_ms": 2.894759178161621,
     "utc_offset_seconds": 7200,
     "timezone": "Europe/Berlin",
     "timezone_abbreviation": "GMT+2",
@@ -476,6 +476,6 @@
       ]
     }
   },
-  "netatmo_messzeit": "17:00",
-  "timestamp": "17:02"
+  "netatmo_messzeit": "17:10",
+  "timestamp": "17:12"
 }
