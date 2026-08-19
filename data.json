@@ -22,7 +22,7 @@
     "hum": 67,
     "co2": 487,
     "trend": "up",
-    "battery": 88
+    "battery": 87
   },
   "keller": {
     "temp": 24.0,
@@ -48,12 +48,12 @@
     "speed": 1,
     "gust": 3,
     "angle": 24,
-    "battery": 92
+    "battery": 93
   },
   "vorhersage": {
     "latitude": 49.576,
     "longitude": 7.0179996,
-    "generationtime_ms": 98.65176677703857,
+    "generationtime_ms": 34.334421157836914,
     "utc_offset_seconds": 7200,
     "timezone": "Europe/Berlin",
     "timezone_abbreviation": "GMT+2",
@@ -466,5 +466,5 @@
       ]
     }
   },
-  "timestamp": "15:19"
+  "timestamp": "15:24"
 }
