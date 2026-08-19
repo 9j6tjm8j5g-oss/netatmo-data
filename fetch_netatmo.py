@@ -1,10 +1,11 @@
 import os
 import json
 import requests
-from datetime import datetime
-import pytz
+from datetime import datetime, timezone, timedelta
 
-tz = pytz.timezone("Europe/Berlin")
+# Mitteleuropäische Zeit (CET/CEST) definieren (UTC+1 bzw. UTC+2 im Sommer)
+# Für August (Sommerzeit) gilt UTC+2:
+tz_offset = timezone(timedelta(hours=2))
 
 # Output-Struktur
 output = {
@@ -44,9 +45,9 @@ try:
         # Zeitstempel der Messung
         last_status = main_dev.get("dashboard_data", {}).get("time_utc")
         if last_status:
-            output["netatmo_messzeit"] = datetime.fromtimestamp(last_status, tz).strftime("%H:%M")
+            output["netatmo_messzeit"] = datetime.fromtimestamp(last_status, tz=tz_offset).strftime("%H:%M")
             
-        # Hauptstation (z.B. Wohnzimmer)
+        # Hauptstation (Wohnzimmer)
         dash = main_dev.get("dashboard_data", {})
         output["wohnzimmer"] = {
             "temp": dash.get("Temperature"),
@@ -78,7 +79,7 @@ try:
 except Exception as e:
     print(f"Fehler bei Netatmo: {e}")
 
-# 2. Open-Meteo Wetterdaten direkt in Python abrufen
+# 2. Open-Meteo Wetterdaten direkt abrufen
 try:
     om_res = requests.get(
         "https://api.open-meteo.com/v1/forecast",
@@ -97,7 +98,7 @@ try:
 except Exception as e:
     print(f"Fehler bei Open-Meteo: {e}")
 
-output["timestamp"] = datetime.now(tz).strftime("%H:%M")
+output["timestamp"] = datetime.now(tz_offset).strftime("%H:%M")
 
 # Speichern
 with open("data.json", "w", encoding="utf-8") as f:
