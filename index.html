@@ -411,7 +411,7 @@
             </div>`;
         }
 
-        // HIER BEHOBEN: Prüft nun sowohl data.buero als auch data.firma
+        // Liest buero ODER firma aus der JSON, zeigt auf der Karte NUR "Büro" an
         const bueroData = data.buero || data.firma;
         if (bueroData) {
           wrapper.innerHTML += `
@@ -420,7 +420,7 @@
               <div class="card-content">
                 <div class="card-header">
                   <div class="card-title-group">
-                    <h3>Büro / Firma</h3>
+                    <h3>Büro</h3>
                     <p>Zusatzmodul</p>
                   </div>
                   ${getBatteryBadge(bueroData.battery)}
