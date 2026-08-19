@@ -482,16 +482,13 @@
 
     async function loadData() {
       try {
-        // Frisches JSON laden (Cacheumgehung)
         const res = await fetch('data.json?t=' + new Date().getTime());
         const data = await res.json();
 
-        // Aktuelles Datum dynamisch erzeugen
         const now = new Date();
         const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
         document.getElementById('full-date').innerText = now.toLocaleDateString('de-DE', options);
 
-        // Uhrzeit-Anzeige aktualisieren
         if (data.netatmo_messzeit) {
           document.getElementById('update-info').innerText = `aktualisiert: ${data.netatmo_messzeit}`;
         } else if (data.timestamp) {
@@ -542,8 +539,10 @@
       }
     }
 
-    loadData();
-    loadEiweilerForecast();
+    // Beide Abfragen ausführen und DANN erst das Bereitschafts-Signal setzen:
+    Promise.all([loadData(), loadEiweilerForecast()]).then(() => {
+      window.status = "ready";
+    });
   </script>
 </body>
 </html>
