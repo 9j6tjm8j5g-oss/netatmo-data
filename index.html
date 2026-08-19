@@ -411,30 +411,32 @@
             </div>`;
         }
 
-        if (data.firma) {
+        // HIER BEHOBEN: Prüft nun sowohl data.buero als auch data.firma
+        const bueroData = data.buero || data.firma;
+        if (bueroData) {
           wrapper.innerHTML += `
             <div class="card purple">
               <div class="card-icon">🏢</div>
               <div class="card-content">
                 <div class="card-header">
                   <div class="card-title-group">
-                    <h3>Firma</h3>
-                    <p>Büro</p>
+                    <h3>Büro / Firma</h3>
+                    <p>Zusatzmodul</p>
                   </div>
-                  ${getBatteryBadge(data.firma.battery)}
+                  ${getBatteryBadge(bueroData.battery)}
                 </div>
                 <div class="metrics-box">
                   <div class="metric">
                     <span class="metric-label">Temp</span>
-                    <span class="metric-value">${data.firma.temp ?? '--'} °C ${getTrendIcon(data.firma.trend)}</span>
+                    <span class="metric-value">${bueroData.temp ?? '--'} °C ${getTrendIcon(bueroData.trend)}</span>
                   </div>
                   <div class="metric">
                     <span class="metric-label">Feuchte</span>
-                    <span class="metric-value">${data.firma.hum ?? '--'} %</span>
+                    <span class="metric-value">${bueroData.hum ?? '--'} %</span>
                   </div>
                   <div class="metric">
                     <span class="metric-label">CO₂</span>
-                    <span class="metric-value">${data.firma.co2 ?? '--'} ppm</span>
+                    <span class="metric-value">${bueroData.co2 ?? '--'} ppm</span>
                   </div>
                 </div>
               </div>
