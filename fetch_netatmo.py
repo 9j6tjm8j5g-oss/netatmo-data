@@ -1,173 +1,92 @@
-import json
 import os
+import json
 import requests
-import time
 from datetime import datetime
-import zoneinfo
+import pytz
 
-TOKEN_FILE = "token.json"
+tz = pytz.timezone("Europe/Berlin")
 
-CLIENT_ID = os.environ.get("NETATMO_CLIENT_ID", "").strip()
-CLIENT_SECRET = os.environ.get("NETATMO_CLIENT_SECRET", "").strip()
+# Output-Struktur
+output = {
+    "wohnzimmer": {},
+    "buero": {},
+    "og": {},
+    "draussen": {},
+    "druck": {},
+    "vorhersage": {},
+    "netatmo_messzeit": "",
+    "timestamp": ""
+}
 
-tz = zoneinfo.ZoneInfo("Europe/Berlin")
+# 1. Netatmo Auth & Daten
+client_id = os.environ.get("NETATMO_CLIENT_ID")
+client_secret = os.environ.get("NETATMO_CLIENT_SECRET")
+refresh_token = os.environ.get("NETATMO_REFRESH_TOKEN")
 
-# 1. Refresh Token
-refresh_token = None
-if os.path.exists(TOKEN_FILE):
-    try:
-        with open(TOKEN_FILE, "r", encoding="utf-8") as f:
-            refresh_token = json.load(f).get("refresh_token")
-    except Exception as e:
-        print(f"Hinweis: {e}")
-
-if not refresh_token:
-    refresh_token = os.environ.get("NETATMO_REFRESH_TOKEN", "").strip()
-
-if not refresh_token:
-    raise SystemExit("FEHLER: Kein Refresh Token gefunden!")
-
-# 2. Token erneuern
-auth_res = requests.post(
-    "https://api.netatmo.com/oauth2/token",
-    data={
+try:
+    auth_res = requests.post("https://api.netatmo.com/oauth2/token", data={
         "grant_type": "refresh_token",
-        "refresh_token": refresh_token,
-        "client_id": CLIENT_ID,
-        "client_secret": CLIENT_SECRET,
-    },
-)
-
-auth_data = auth_res.json()
-access_token = auth_data.get("access_token")
-new_refresh_token = auth_data.get("refresh_token")
-
-if not access_token or not new_refresh_token:
-    print("FEHLER beim Refresh:", auth_data)
-    raise SystemExit("Token ungültig.")
-
-with open(TOKEN_FILE, "w", encoding="utf-8") as f:
-    json.dump({"refresh_token": new_refresh_token}, f, indent=2)
-
-# 3. Netatmo Daten abrufen
-MAX_VERSUCHE = 6
-WAIT_SECONDS = 20
-
-raw_data = {}
-for versuch in range(1, MAX_VERSUCHE + 1):
-    data_res = requests.get(
-        "https://api.netatmo.com/api/getstationsdata",
-        params={"no_cache": "true"},
-        headers={"Authorization": f"Bearer {access_token}"},
-    )
-    raw_data = data_res.json()
-    devices = raw_data.get("body", {}).get("devices", [])
-
+        "client_id": client_id,
+        "client_secret": client_secret,
+        "refresh_token": refresh_token
+    }, timeout=10)
+    
+    token = auth_res.json().get("access_token")
+    
+    dev_res = requests.get("https://api.netatmo.com/api/getstationsdata", headers={
+        "Authorization": f"Bearer {token}"
+    }, timeout=10)
+    
+    devices = dev_res.json().get("body", {}).get("devices", [])
     if devices:
-        main_mod = devices[0]
-        dash = main_mod.get("dashboard_data", {})
-        netatmo_ts = dash.get("time_utc")
-
-        if netatmo_ts:
-            alter_in_sekunden = datetime.now(tz).timestamp() - netatmo_ts
-            if alter_in_sekunden < 480:
-                print(f"Frische Daten erhalten! (Alter: {int(alter_in_sekunden)}s)")
-                break
-            else:
-                if versuch < MAX_VERSUCHE:
-                    time.sleep(WAIT_SECONDS)
-
-devices = raw_data.get("body", {}).get("devices", [])
-output = {}
-
-def fmt(val):
-    return round(float(val), 1) if val is not None else None
-
-if devices:
-    main_mod = devices[0]
-    dash = main_mod.get("dashboard_data", {})
-
-    netatmo_ts = dash.get("time_utc")
-    if netatmo_ts:
-        output["netatmo_messzeit"] = datetime.fromtimestamp(netatmo_ts, tz=tz).strftime("%H:%M")
-    else:
-        output["netatmo_messzeit"] = "unbekannt"
-
-    # Hauptmodul -> Immer Wohnzimmer
-    output["wohnzimmer"] = {
-        "temp": fmt(dash.get("Temperature")),
-        "hum": dash.get("Humidity"),
-        "co2": dash.get("CO2"),
-        "trend": dash.get("temp_trend", "stable"),
-    }
-    output["druck"] = {
-        "val": fmt(dash.get("Pressure")),
-        "trend": dash.get("pressure_trend", "stable"),
-    }
-
-    # Zusatzmodule durchlaufen
-    for mod in main_mod.get("modules", []):
-        mod_type = mod.get("type")
+        main_dev = devices[0]
         
-        # Name normalisieren (Umlaute ersetzen, Kleinschreibung)
-        raw_name = mod.get("module_name", "").lower()
-        clean_name = raw_name.replace("ü", "ue").replace("ä", "ae").replace("ö", "oe")
-        
-        m_dash = mod.get("dashboard_data", {})
-        battery = mod.get("battery_percent")
-
-        if not m_dash:
-            continue
-
-        if mod_type == "NAModule3":  # Regen
-            output["regen"] = {
-                "rain": m_dash.get("Rain", 0),
-                "sum_1h": m_dash.get("sum_rain_1", 0),
-                "sum_24h": m_dash.get("sum_rain_24", 0),
-                "battery": battery,
-            }
-            continue
-
-        if mod_type == "NAModule2":  # Wind
-            output["wind"] = {
-                "speed": m_dash.get("WindStrength"),
-                "gust": m_dash.get("GustStrength"),
-                "angle": m_dash.get("WindAngle"),
-                "battery": battery,
-            }
-            continue
-
-        mod_data = {
-            "temp": fmt(m_dash.get("Temperature")),
-            "hum": m_dash.get("Humidity"),
-            "co2": m_dash.get("CO2"),
-            "trend": m_dash.get("temp_trend", "stable"),
-            "battery": battery,
+        # Zeitstempel der Messung
+        last_status = main_dev.get("dashboard_data", {}).get("time_utc")
+        if last_status:
+            output["netatmo_messzeit"] = datetime.fromtimestamp(last_status, tz).strftime("%H:%M")
+            
+        # Hauptstation (z.B. Wohnzimmer)
+        dash = main_dev.get("dashboard_data", {})
+        output["wohnzimmer"] = {
+            "temp": dash.get("Temperature"),
+            "hum": dash.get("Humidity"),
+            "co2": dash.get("CO2"),
+            "trend": dash.get("temp_trend", "stable")
         }
+        output["druck"] = {"val": dash.get("Pressure")}
 
-        # Strikte & tolerante Zuordnung
-        if mod_type == "NAModule1" or "aussen" in clean_name or "drazssen" in clean_name:
-            output["draussen"] = mod_data
-        elif "og" in clean_name or "obergeschoss" in clean_name:
-            output["og"] = mod_data
-        elif "buero" in clean_name or "buero" in raw_name or "firma" in clean_name or "office" in clean_name:
-            output["buero"] = mod_data
-        elif "keller" in clean_name:
-            output["keller"] = mod_data
+        # Module (Aussen, Buero, OG)
+        for mod in main_dev.get("modules", []):
+            m_dash = mod.get("dashboard_data", {})
+            name = mod.get("module_name", "").lower()
+            
+            mod_data = {
+                "temp": m_dash.get("Temperature"),
+                "hum": m_dash.get("Humidity"),
+                "co2": m_dash.get("CO2"),
+                "trend": m_dash.get("temp_trend", "stable")
+            }
+            
+            if "außen" in name or "draussen" in name or "outdoor" in name:
+                output["draussen"] = mod_data
+            elif "büro" in name or "buero" in name or "firma" in name:
+                output["buero"] = mod_data
+            elif "og" in name or "obergeschoss" in name:
+                output["og"] = mod_data
 
-# Fallback: Falls 'buero' aus irgendeinem Grund noch fehlt, wird 'firma' (falls vorhanden) umkopiert
-if "buero" not in output and "firma" in output:
-    output["buero"] = output["firma"]
+except Exception as e:
+    print(f"Fehler bei Netatmo: {e}")
 
-# 4. Open-Meteo
+# 2. Open-Meteo Wetterdaten direkt in Python abrufen
 try:
     om_res = requests.get(
         "https://api.open-meteo.com/v1/forecast",
         params={
-            "latitude": 49.5694,
-            "longitude": 7.0097,
-            "daily": "temperature_2m_max,temperature_2m_min,weathercode",
-            "hourly": "temperature_2m,precipitation_probability,precipitation,weathercode",
+            "latitude": 49.563,
+            "longitude": 7.022,
+            "daily": "temperature_2m_max,temperature_2m_min,weathercode,sunrise,sunset",
+            "hourly": "temperature_2m,weathercode",
             "timezone": "Europe/Berlin",
             "forecast_days": 3
         },
@@ -180,5 +99,8 @@ except Exception as e:
 
 output["timestamp"] = datetime.now(tz).strftime("%H:%M")
 
+# Speichern
 with open("data.json", "w", encoding="utf-8") as f:
     json.dump(output, f, indent=2, ensure_ascii=False)
+
+print("data.json erfolgreich generiert.")
