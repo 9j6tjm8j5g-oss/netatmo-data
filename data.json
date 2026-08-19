@@ -1,9 +1,9 @@
 {
-  "netatmo_messzeit": "10:56",
+  "netatmo_messzeit": "11:16",
   "wohnzimmer": {
-    "temp": 21.9,
+    "temp": 21.8,
     "hum": 80,
-    "co2": 438,
+    "co2": 443,
     "trend": "stable"
   },
   "druck": {
@@ -16,24 +16,24 @@
     "trend": "stable",
     "battery": 31
   },
-  "firma": {
+  "buero": {
     "temp": 23.0,
     "hum": 66,
-    "co2": 446,
+    "co2": 468,
     "trend": "stable",
     "battery": 88
   },
   "keller": {
-    "temp": 22.5,
+    "temp": 22.6,
     "hum": 70,
-    "co2": 463,
+    "co2": 452,
     "trend": "stable",
     "battery": 31
   },
   "og": {
     "temp": 22.8,
     "hum": 67,
-    "co2": 459,
+    "co2": 463,
     "trend": "stable",
     "battery": 54
   },
@@ -46,13 +46,13 @@
   "wind": {
     "speed": 1,
     "gust": 2,
-    "angle": 45,
+    "angle": 50,
     "battery": 93
   },
   "vorhersage": {
     "latitude": 49.576,
     "longitude": 7.0179996,
-    "generationtime_ms": 4.129886627197266,
+    "generationtime_ms": 3.553032875061035,
     "utc_offset_seconds": 7200,
     "timezone": "Europe/Berlin",
     "timezone_abbreviation": "GMT+2",
@@ -465,5 +465,5 @@
       ]
     }
   },
-  "timestamp": "11:06"
+  "timestamp": "11:16"
 }
