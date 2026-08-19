@@ -3,8 +3,7 @@ import json
 import requests
 from datetime import datetime, timezone, timedelta
 
-# Mitteleuropäische Zeit (CET/CEST) definieren (UTC+1 bzw. UTC+2 im Sommer)
-# Für August (Sommerzeit) gilt UTC+2:
+# Zeitzone definieren (Mitteleuropäische Sommerzeit = UTC+2)
 tz_offset = timezone(timedelta(hours=2))
 
 # Output-Struktur
@@ -42,7 +41,7 @@ try:
     if devices:
         main_dev = devices[0]
         
-        # Zeitstempel der Messung
+        # Zeitstempel der letzten Netatmo-Messung
         last_status = main_dev.get("dashboard_data", {}).get("time_utc")
         if last_status:
             output["netatmo_messzeit"] = datetime.fromtimestamp(last_status, tz=tz_offset).strftime("%H:%M")
@@ -57,10 +56,11 @@ try:
         }
         output["druck"] = {"val": dash.get("Pressure")}
 
-        # Module (Aussen, Buero, OG)
+        # Zusatzmodule (Außensensor, Büro, OG)
         for mod in main_dev.get("modules", []):
             m_dash = mod.get("dashboard_data", {})
             name = mod.get("module_name", "").lower()
+            mod_type = mod.get("type", "")
             
             mod_data = {
                 "temp": m_dash.get("Temperature"),
@@ -69,11 +69,12 @@ try:
                 "trend": m_dash.get("temp_trend", "stable")
             }
             
-            if "außen" in name or "draussen" in name or "outdoor" in name:
+            # Direct Typ-Check: NAModule1 ist bei Netatmo IMMER der Außensensor
+            if mod_type == "NAModule1" or any(x in name for x in ["au", "drau", "out"]):
                 output["draussen"] = mod_data
-            elif "büro" in name or "buero" in name or "firma" in name:
+            elif any(x in name for x in ["bür", "buer", "firm"]):
                 output["buero"] = mod_data
-            elif "og" in name or "obergeschoss" in name:
+            elif any(x in name for x in ["og", "ober"]):
                 output["og"] = mod_data
 
 except Exception as e:
@@ -100,7 +101,7 @@ except Exception as e:
 
 output["timestamp"] = datetime.now(tz_offset).strftime("%H:%M")
 
-# Speichern
+# Speichern der data.json
 with open("data.json", "w", encoding="utf-8") as f:
     json.dump(output, f, indent=2, ensure_ascii=False)
 
