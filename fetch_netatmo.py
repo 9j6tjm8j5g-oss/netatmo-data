@@ -10,10 +10,9 @@ TOKEN_FILE = "token.json"
 CLIENT_ID = os.environ.get("NETATMO_CLIENT_ID", "").strip()
 CLIENT_SECRET = os.environ.get("NETATMO_CLIENT_SECRET", "").strip()
 
-# Zeitzone definieren
 tz = zoneinfo.ZoneInfo("Europe/Berlin")
 
-# 1. Refresh Token ermitteln
+# 1. Refresh Token
 refresh_token = None
 if os.path.exists(TOKEN_FILE):
     try:
@@ -47,13 +46,10 @@ if not access_token or not new_refresh_token:
     print("FEHLER beim Refresh:", auth_data)
     raise SystemExit("Token ungültig.")
 
-# Token sichern
 with open(TOKEN_FILE, "w", encoding="utf-8") as f:
     json.dump({"refresh_token": new_refresh_token}, f, indent=2)
 
-# 3. Netatmo Daten mit smarter Warte-Schleife abrufen
-# Prüft, ob die Messung jünger als 8 Minuten (480s) ist. Falls die Station kurz
-# vor dem Senden steht, wartet Python in Schleifen, bis die ganz neuen Daten da sind.
+# 3. Netatmo Daten mit smarter Warte-Schleife
 MAX_VERSUCHE = 6
 WAIT_SECONDS = 20
 
@@ -74,8 +70,6 @@ for versuch in range(1, MAX_VERSUCHE + 1):
 
         if netatmo_ts:
             alter_in_sekunden = datetime.now(tz).timestamp() - netatmo_ts
-            
-            # Daten sind jünger als 8 Minuten -> Perfekt!
             if alter_in_sekunden < 480:
                 print(f"Frische Netatmo-Daten erhalten! (Alter: {int(alter_in_sekunden)}s)")
                 break
@@ -146,21 +140,18 @@ if devices:
             "battery": battery,
         }
 
+        # Zuordnung der Raummessmodule
         if "aussen" in name or "draußen" in name or mod_type == "NAModule1":
-            output["draussen"] = {
-                "temp": mod_data["temp"],
-                "hum": mod_data["hum"],
-                "trend": mod_data["trend"],
-                "battery": battery,
-            }
-        elif "firma" in name or "büro" in name or "buero" in name:
-            output["buero"] = mod_data
-        elif "keller" in name:
-            output["keller"] = mod_data
+            output["draussen"] = mod_data
         elif "og" in name or "obergeschoss" in name:
             output["og"] = mod_data
+        elif "keller" in name:
+            output["keller"] = mod_data
+        else:
+            # Jedes verbleibende Innenmodul wird fest dem Büro zugewiesen!
+            output["buero"] = mod_data
 
-# 4. Open-Meteo Wettervorhersage abrufen
+# 4. Open-Meteo Wettervorhersage
 try:
     om_res = requests.get(
         "https://api.open-meteo.com/v1/forecast",
@@ -177,7 +168,7 @@ try:
     if om_res.status_code == 200:
         output["vorhersage"] = om_res.json()
 except Exception as e:
-    print(f"Fehler beim Laden von Open-Meteo: {e}")
+    print(f"Fehler bei Open-Meteo: {e}")
 
 output["timestamp"] = datetime.now(tz).strftime("%H:%M")
 
