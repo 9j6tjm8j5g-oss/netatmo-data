@@ -16,18 +16,19 @@ def create_epaper_png():
     server_thread = threading.Thread(target=start_server, daemon=True)
     server_thread.start()
 
-    # 2. Mit Playwright die HTML über http://localhost aufrufen
+    # 2. Browser mit deutscher Zeitzone (Europe/Berlin) starten
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        page = browser.new_page(viewport={"width": 800, "height": 480})
+        context = browser.new_context(
+            viewport={"width": 800, "height": 480},
+            timezone_id="Europe/Berlin",  # Zwingt Playwright auf deutsche Zeit
+            extra_http_headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+        )
+        page = context.new_page()
         
-        # Ruft die Datei wie eine echte Webseite auf (CORS-Sperre ist damit aufgehoben)
-        page.goto(f"http://localhost:{PORT}/epaper.html")
+        page.goto(f"http://localhost:{PORT}/epaper.html", wait_until="networkidle")
+        page.wait_for_timeout(3000)
         
-        # 3. Kurz warten, bis fetch('data.json') & Open-Meteo fertig sind
-        page.wait_for_timeout(4000)
-        
-        # Screenshot erstellen
         page.screenshot(path="epaper.png")
         browser.close()
 
