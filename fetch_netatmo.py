@@ -1,6 +1,7 @@
 import json
 import os
 import requests
+import time
 from datetime import datetime
 import zoneinfo
 
@@ -50,13 +51,39 @@ if not access_token or not new_refresh_token:
 with open(TOKEN_FILE, "w", encoding="utf-8") as f:
     json.dump({"refresh_token": new_refresh_token}, f, indent=2)
 
-# 3. Netatmo Daten abrufen
-data_res = requests.get(
-    "https://api.netatmo.com/api/getstationsdata",
-    params={"no_cache": "true"},
-    headers={"Authorization": f"Bearer {access_token}"},
-)
-raw_data = data_res.json()
+# 3. Netatmo Daten mit smarter Warte-Schleife abrufen
+# Prüft, ob die Messung jünger als 8 Minuten (480s) ist. Falls die Station kurz
+# vor dem Senden steht, wartet Python in Schleifen, bis die ganz neuen Daten da sind.
+MAX_VERSUCHE = 6
+WAIT_SECONDS = 20
+
+raw_data = {}
+for versuch in range(1, MAX_VERSUCHE + 1):
+    data_res = requests.get(
+        "https://api.netatmo.com/api/getstationsdata",
+        params={"no_cache": "true"},
+        headers={"Authorization": f"Bearer {access_token}"},
+    )
+    raw_data = data_res.json()
+    devices = raw_data.get("body", {}).get("devices", [])
+
+    if devices:
+        main_mod = devices[0]
+        dash = main_mod.get("dashboard_data", {})
+        netatmo_ts = dash.get("time_utc")
+
+        if netatmo_ts:
+            alter_in_sekunden = datetime.now(tz).timestamp() - netatmo_ts
+            
+            # Daten sind jünger als 8 Minuten -> Perfekt!
+            if alter_in_sekunden < 480:
+                print(f"Frische Netatmo-Daten erhalten! (Alter: {int(alter_in_sekunden)}s)")
+                break
+            else:
+                print(f"Versuch {versuch}/{MAX_VERSUCHE}: Daten sind {int(alter_in_sekunden/60)} Min. alt. Warte {WAIT_SECONDS}s auf Netatmo-Update...")
+                if versuch < MAX_VERSUCHE:
+                    time.sleep(WAIT_SECONDS)
+
 devices = raw_data.get("body", {}).get("devices", [])
 output = {}
 
@@ -126,8 +153,8 @@ if devices:
                 "trend": mod_data["trend"],
                 "battery": battery,
             }
-        elif "firma" in name:
-            output["firma"] = mod_data
+        elif "firma" in name or "büro" in name or "buero" in name:
+            output["buero"] = mod_data
         elif "keller" in name:
             output["keller"] = mod_data
         elif "og" in name or "obergeschoss" in name:
