@@ -53,7 +53,7 @@
   "vorhersage": {
     "latitude": 49.576,
     "longitude": 7.0179996,
-    "generationtime_ms": 3.2116174697875977,
+    "generationtime_ms": 1.3490915298461914,
     "utc_offset_seconds": 7200,
     "timezone": "Europe/Berlin",
     "timezone_abbreviation": "GMT+2",
@@ -466,5 +466,5 @@
       ]
     }
   },
-  "timestamp": "13:11"
+  "timestamp": "13:12"
 }
