@@ -476,7 +476,7 @@
         const forecastWrapper = document.getElementById('forecast-cards');
         forecastWrapper.innerHTML = '';
 
-        // 1. REGENSENSOR
+        // 1. REGENSENSOR (Wird angezeigt, sobald data.regen vorhanden ist)
         if (data.regen) {
           const rainCurrent = data.regen.rain ?? 0;
           const sum1h = data.regen.sum_1h ?? 0;
@@ -511,7 +511,7 @@
             </div>`;
         }
 
-        // 2. OPEN-METEO PROGNOSE
+        // 2. OPEN-METEO 3-TAGE VORHERSAGE
         if (data.vorhersage && data.vorhersage.daily) {
           const daily = data.vorhersage.daily;
 
@@ -545,7 +545,7 @@
           dailyHTML += `</div></div></div>`;
           forecastWrapper.innerHTML += dailyHTML;
 
-          // Karte 3: Stündlicher Trend
+          // 3. STÜNDLICHER TREND (Nächste 5 Stunden)
           if (data.vorhersage.hourly && data.vorhersage.hourly.time) {
             const hourly = data.vorhersage.hourly;
             const now = new Date();
@@ -565,7 +565,7 @@
 
             let count = 0;
             for (let i = 0; i < hourly.time.length; i++) {
-              // Parse Date String sicher (Open-Meteo liefert 'YYYY-MM-THH:mm')
+              // Time string parsen (Form: "YYYY-MM-THH:mm")
               const itemTime = new Date(hourly.time[i]);
 
               if (itemTime >= now && count < 5) {
