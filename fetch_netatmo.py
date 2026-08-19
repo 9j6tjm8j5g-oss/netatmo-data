@@ -13,6 +13,7 @@ output = {
     "og": {},
     "draussen": {},
     "druck": {},
+    "regen": {},
     "vorhersage": {},
     "netatmo_messzeit": "",
     "timestamp": ""
@@ -56,30 +57,52 @@ try:
         }
         output["druck"] = {"val": dash.get("Pressure")}
 
-        # Zusatzmodule (Außensensor, Büro, OG)
+        # Zusatzmodule
         for mod in main_dev.get("modules", []):
             m_dash = mod.get("dashboard_data", {})
             name = mod.get("module_name", "").lower()
             mod_type = mod.get("type", "")
+            battery = mod.get("battery_percent")
             
-            mod_data = {
-                "temp": m_dash.get("Temperature"),
-                "hum": m_dash.get("Humidity"),
-                "co2": m_dash.get("CO2"),
-                "trend": m_dash.get("temp_trend", "stable")
-            }
-            
-            if mod_type == "NAModule1" or any(x in name for x in ["au", "drau", "out"]):
-                output["draussen"] = mod_data
+            # REGENSENSOR (NAModule3)
+            if mod_type == "NAModule3" or "regen" in name or "rain" in name:
+                output["regen"] = {
+                    "rain": m_dash.get("Rain"),
+                    "sum_1h": m_dash.get("sum_rain_1"),
+                    "sum_24h": m_dash.get("sum_rain_24"),
+                    "battery": battery
+                }
+            # AUSSENSENSOR (NAModule1)
+            elif mod_type == "NAModule1" or any(x in name for x in ["au", "drau", "out"]):
+                output["draussen"] = {
+                    "temp": m_dash.get("Temperature"),
+                    "hum": m_dash.get("Humidity"),
+                    "trend": m_dash.get("temp_trend", "stable"),
+                    "battery": battery
+                }
+            # BÜRO
             elif any(x in name for x in ["bür", "buer", "firm"]):
-                output["buero"] = mod_data
+                output["buero"] = {
+                    "temp": m_dash.get("Temperature"),
+                    "hum": m_dash.get("Humidity"),
+                    "co2": m_dash.get("CO2"),
+                    "trend": m_dash.get("temp_trend", "stable"),
+                    "battery": battery
+                }
+            # OBERGESCHOSS
             elif any(x in name for x in ["og", "ober"]):
-                output["og"] = mod_data
+                output["og"] = {
+                    "temp": m_dash.get("Temperature"),
+                    "hum": m_dash.get("Humidity"),
+                    "co2": m_dash.get("CO2"),
+                    "trend": m_dash.get("temp_trend", "stable"),
+                    "battery": battery
+                }
 
 except Exception as e:
     print(f"Fehler bei Netatmo: {e}")
 
-# 2. Open-Meteo Wetterdaten (inkl. Niederschlagswahrscheinlichkeit & Menge)
+# 2. Open-Meteo Wetterdaten (inkl. stündlicher Daten & Niederschlag)
 try:
     om_res = requests.get(
         "https://api.open-meteo.com/v1/forecast",
