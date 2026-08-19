@@ -12,7 +12,6 @@ def start_server():
         httpd.serve_forever()
 
 def create_epaper_png():
-    # Startet einen lokalen Mini-Webserver im Hintergrund
     server_thread = threading.Thread(target=start_server, daemon=True)
     server_thread.start()
 
@@ -20,14 +19,11 @@ def create_epaper_png():
         browser = p.chromium.launch()
         page = browser.new_page(viewport={"width": 800, "height": 480})
         
-        # Aufruf über HTTP statt file:// (Verhindert CORS-Blockaden komplett!)
         page.goto(f"http://localhost:{PORT}/epaper.html")
-        
-        # 6 Sekunden warten, damit Open-Meteo & Netatmo fertig gerendert sind
         page.wait_for_timeout(6000)
         
+        # Erzeugt nur noch epaper.png
         page.screenshot(path="epaper.png")
-        page.screenshot(path="display.png")
         
         browser.close()
 
