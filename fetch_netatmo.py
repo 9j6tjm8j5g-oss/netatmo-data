@@ -49,7 +49,7 @@ if not access_token or not new_refresh_token:
 with open(TOKEN_FILE, "w", encoding="utf-8") as f:
     json.dump({"refresh_token": new_refresh_token}, f, indent=2)
 
-# 3. Netatmo Daten mit smarter Warte-Schleife
+# 3. Netatmo Daten abrufen
 MAX_VERSUCHE = 6
 WAIT_SECONDS = 20
 
@@ -71,10 +71,9 @@ for versuch in range(1, MAX_VERSUCHE + 1):
         if netatmo_ts:
             alter_in_sekunden = datetime.now(tz).timestamp() - netatmo_ts
             if alter_in_sekunden < 480:
-                print(f"Frische Netatmo-Daten erhalten! (Alter: {int(alter_in_sekunden)}s)")
+                print(f"Frische Daten erhalten! (Alter: {int(alter_in_sekunden)}s)")
                 break
             else:
-                print(f"Versuch {versuch}/{MAX_VERSUCHE}: Daten sind {int(alter_in_sekunden/60)} Min. alt. Warte {WAIT_SECONDS}s auf Netatmo-Update...")
                 if versuch < MAX_VERSUCHE:
                     time.sleep(WAIT_SECONDS)
 
@@ -94,6 +93,7 @@ if devices:
     else:
         output["netatmo_messzeit"] = "unbekannt"
 
+    # Hauptmodul -> Immer Wohnzimmer
     output["wohnzimmer"] = {
         "temp": fmt(dash.get("Temperature")),
         "hum": dash.get("Humidity"),
@@ -105,6 +105,7 @@ if devices:
         "trend": dash.get("pressure_trend", "stable"),
     }
 
+    # Zusatzmodule durchlaufen
     for mod in main_mod.get("modules", []):
         mod_type = mod.get("type")
         name = mod.get("module_name", "").lower()
@@ -140,18 +141,17 @@ if devices:
             "battery": battery,
         }
 
-        # Zuordnung der Raummessmodule
-        if "aussen" in name or "draußen" in name or mod_type == "NAModule1":
+        # Eindeutige und feste Zuordnung nach Modultyp und Name:
+        if mod_type == "NAModule1" or "aussen" in name or "draußen" in name:
             output["draussen"] = mod_data
         elif "og" in name or "obergeschoss" in name:
             output["og"] = mod_data
+        elif "büro" in name or "buero" in name or "office" in name or "firma" in name:
+            output["buero"] = mod_data
         elif "keller" in name:
             output["keller"] = mod_data
-        else:
-            # Jedes verbleibende Innenmodul wird fest dem Büro zugewiesen!
-            output["buero"] = mod_data
 
-# 4. Open-Meteo Wettervorhersage
+# 4. Open-Meteo
 try:
     om_res = requests.get(
         "https://api.open-meteo.com/v1/forecast",
