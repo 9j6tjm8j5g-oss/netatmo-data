@@ -108,7 +108,11 @@ if devices:
     # Zusatzmodule durchlaufen
     for mod in main_mod.get("modules", []):
         mod_type = mod.get("type")
-        name = mod.get("module_name", "").lower()
+        
+        # Name normalisieren (Umlaute ersetzen, Kleinschreibung)
+        raw_name = mod.get("module_name", "").lower()
+        clean_name = raw_name.replace("ü", "ue").replace("ä", "ae").replace("ö", "oe")
+        
         m_dash = mod.get("dashboard_data", {})
         battery = mod.get("battery_percent")
 
@@ -141,15 +145,19 @@ if devices:
             "battery": battery,
         }
 
-        # Eindeutige und feste Zuordnung nach Modultyp und Name:
-        if mod_type == "NAModule1" or "aussen" in name or "draußen" in name:
+        # Strikte & tolerante Zuordnung
+        if mod_type == "NAModule1" or "aussen" in clean_name or "drazssen" in clean_name:
             output["draussen"] = mod_data
-        elif "og" in name or "obergeschoss" in name:
+        elif "og" in clean_name or "obergeschoss" in clean_name:
             output["og"] = mod_data
-        elif "büro" in name or "buero" in name or "office" in name or "firma" in name:
+        elif "buero" in clean_name or "buero" in raw_name or "firma" in clean_name or "office" in clean_name:
             output["buero"] = mod_data
-        elif "keller" in name:
+        elif "keller" in clean_name:
             output["keller"] = mod_data
+
+# Fallback: Falls 'buero' aus irgendeinem Grund noch fehlt, wird 'firma' (falls vorhanden) umkopiert
+if "buero" not in output and "firma" in output:
+    output["buero"] = output["firma"]
 
 # 4. Open-Meteo
 try:
