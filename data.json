@@ -37,7 +37,7 @@
   "vorhersage": {
     "latitude": 49.558,
     "longitude": 7.0179996,
-    "generationtime_ms": 2.511739730834961,
+    "generationtime_ms": 1.843094825744629,
     "utc_offset_seconds": 7200,
     "timezone": "Europe/Berlin",
     "timezone_abbreviation": "GMT+2",
@@ -477,5 +477,5 @@
     }
   },
   "netatmo_messzeit": "01:45",
-  "timestamp": "01:46"
+  "timestamp": "01:52"
 }
