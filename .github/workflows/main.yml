@@ -2,7 +2,7 @@ name: Netatmo & E-Paper Update
 
 on:
   schedule:
-    - cron: '6,16,26,36,46,56 * * * *'
+    - cron: '2,12,22,32,42,52 * * * *'
   workflow_dispatch:
   repository_dispatch:
     types: [cron_trigger]
