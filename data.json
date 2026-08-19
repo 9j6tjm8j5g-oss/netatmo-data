@@ -22,7 +22,7 @@
   "draussen": {
     "temp": 24.5,
     "hum": 77,
-    "trend": "up",
+    "trend": "stable",
     "battery": 31
   },
   "druck": {
@@ -37,7 +37,7 @@
   "vorhersage": {
     "latitude": 49.558,
     "longitude": 7.0179996,
-    "generationtime_ms": 1.7203092575073242,
+    "generationtime_ms": 2.3137331008911133,
     "utc_offset_seconds": 7200,
     "timezone": "Europe/Berlin",
     "timezone_abbreviation": "GMT+2",
@@ -477,5 +477,5 @@
     }
   },
   "netatmo_messzeit": "16:50",
-  "timestamp": "16:52"
+  "timestamp": "16:57"
 }
