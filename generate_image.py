@@ -1,34 +1,21 @@
 import os
-import http.server
-import socketserver
-import threading
 from playwright.sync_api import sync_playwright
 
-PORT = 8000
-
 def create_epaper_png():
-    # 1. Lokalen Webserver im Hintergrund aufsetzen
-    handler = http.server.SimpleHTTPRequestHandler
-    httpd = socketserver.TCPServer(("", PORT), handler)
-    
-    server_thread = threading.Thread(target=httpd.serve_forever, daemon=True)
-    server_thread.start()
-
-    try:
-        # 2. Playwright starten und Bild erzeugen
-        with sync_playwright() as p:
-            browser = p.chromium.launch()
-            page = browser.new_page(viewport={"width": 800, "height": 480})
-            
-            page.goto(f"http://localhost:{PORT}/epaper.html")
-            page.wait_for_timeout(6000)
-            
-            page.screenshot(path="epaper.png")
-            browser.close()
-    finally:
-        # 3. Server sauber beenden, damit das Skript nicht hängen bleibt!
-        httpd.shutdown()
-        httpd.server_close()
+    with sync_playwright() as p:
+        # --allow-file-access-from-files erlaubt fetch('data.json') direkt über file://
+        browser = p.chromium.launch(args=["--allow-file-access-from-files"])
+        page = browser.new_page(viewport={"width": 800, "height": 480})
+        
+        # Pfad zur lokalen epaper.html ermitteln
+        html_path = os.path.abspath("epaper.html")
+        page.goto(f"file://{html_path}")
+        
+        # Kurz warten, damit JS die data.json liest und das DOM aktualisiert
+        page.wait_for_timeout(4000)
+        
+        page.screenshot(path="epaper.png")
+        browser.close()
 
 if __name__ == "__main__":
     create_epaper_png()
