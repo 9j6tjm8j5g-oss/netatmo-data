@@ -8,7 +8,6 @@ PORT = 8080
 
 def start_server():
     handler = http.server.SimpleHTTPRequestHandler
-    # Allow address reuse to avoid 'address already in use' on quick restarts
     socketserver.TCPServer.allow_reuse_address = True
     httpd = socketserver.TCPServer(("", PORT), handler)
     httpd.serve_forever()
@@ -28,15 +27,19 @@ def create_epaper_png():
         )
         page = context.new_page()
         
-        # Seite aufrufen
+        # Aufrufen der Seite
         page.goto(f"http://localhost:{PORT}/epaper.html")
         
-        # Schnelligkeit & Sicherheit:
-        # Reagiert sofort (in Millisekunden), wenn das JS fertig gelaufen ist!
-        page.wait_for_selector("body[data-rendered='true']", timeout=10000)
+        # 3. Warten, bis alle Netzwerkanfragen (wie data.json) abgeschlossen sind
+        page.wait_for_load_state("networkidle")
         
-        # Screenshot machen
+        # 4. Kurze Pause für das finale Rendern der Elemente im DOM
+        page.wait_for_timeout(1000)
+        
+        # 5. Screenshot erstellen
         page.screenshot(path="epaper.png")
+        print("Erfolg: epaper.png wurde erstellt!")
+        
         browser.close()
 
 if __name__ == "__main__":
