@@ -26,10 +26,17 @@ def create_epaper_png():
         )
         page = context.new_page()
         
-        page.goto(f"http://localhost:{PORT}/epaper.html", wait_until="networkidle")
-        page.wait_for_timeout(3000)
+        # --- AB HIER ERSETZEN / ANPASSEN ---
+        # Normales Laden abwarten
+        page.goto(f"http://localhost:{PORT}/epaper.html", wait_until="domcontentloaded")
         
+        # 7 Sekunden warten, damit Fetch & Render in der epaper.html garantiert fertig sind
+        page.wait_for_timeout(7000)
+        
+        # Screenshot erstellen
         page.screenshot(path="epaper.png")
+        # -----------------------------------
+        
         browser.close()
 
 if __name__ == "__main__":
