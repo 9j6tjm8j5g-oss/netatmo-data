@@ -27,18 +27,16 @@ def create_epaper_png():
         )
         page = context.new_page()
         
-        # Aufrufen der Seite
+        # Aufrufen der E-Paper HTML Seite
         page.goto(f"http://localhost:{PORT}/epaper.html")
         
-        # 3. Warten, bis alle Netzwerkanfragen (wie data.json) abgeschlossen sind
-        page.wait_for_load_state("networkidle")
+        # 3. Perfekte Synchronisation:
+        # Wartet exakt darauf, dass das JS in der HTML "window.status = 'ready'" setzt!
+        page.wait_for_function("window.status === 'ready'", timeout=10000)
         
-        # 4. Kurze Pause für das finale Rendern der Elemente im DOM
-        page.wait_for_timeout(1000)
-        
-        # 5. Screenshot erstellen
+        # 4. Screenshot direkt erstellen
         page.screenshot(path="epaper.png")
-        print("Erfolg: epaper.png wurde erstellt!")
+        print("Erfolg: epaper.png wurde perfekt und vollständig erstellt!")
         
         browser.close()
 
