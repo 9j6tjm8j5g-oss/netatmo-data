@@ -411,7 +411,6 @@
             </div>`;
         }
 
-        // Liest buero ODER firma aus der JSON, zeigt auf der Karte NUR "Büro" an
         const bueroData = data.buero || data.firma;
         if (bueroData) {
           wrapper.innerHTML += `
@@ -547,7 +546,7 @@
           forecastWrapper.innerHTML += dailyHTML;
 
           // Karte 3: Stündlicher Trend
-          if (data.vorhersage.hourly) {
+          if (data.vorhersage.hourly && data.vorhersage.hourly.time) {
             const hourly = data.vorhersage.hourly;
             const now = new Date();
             now.setMinutes(0, 0, 0);
@@ -566,13 +565,14 @@
 
             let count = 0;
             for (let i = 0; i < hourly.time.length; i++) {
+              // Parse Date String sicher (Open-Meteo liefert 'YYYY-MM-THH:mm')
               const itemTime = new Date(hourly.time[i]);
 
               if (itemTime >= now && count < 5) {
                 const hourStr = itemTime.getHours().toString().padStart(2, '0') + ':00';
-                const temp = hourly.temperature_2m[i].toFixed(1);
-                const prob = hourly.precipitation_probability[i];
-                const rain = hourly.precipitation[i];
+                const temp = hourly.temperature_2m[i] !== undefined ? hourly.temperature_2m[i].toFixed(1) : '--';
+                const prob = hourly.precipitation_probability ? hourly.precipitation_probability[i] : 0;
+                const rain = hourly.precipitation ? hourly.precipitation[i] : 0;
                 const wInfo = getWeatherInfo(hourly.weathercode[i]);
 
                 hourlyHTML += `
