@@ -25,7 +25,7 @@ jobs:
 
       - name: Python Pakete & Playwright installieren
         run: |
-          pip install requests playwright
+          pip install requests playwright Pillow
           playwright install chromium
 
       - name: Netatmo Daten abrufen & Bild erzeugen
