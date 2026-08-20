@@ -4,42 +4,90 @@
   <meta charset="UTF-8">
   <title>E-Paper Wetterstation Classic</title>
   <style>
-    * { box-sizing: border-box; margin: 0; padding: 0; font-family: Arial, Helvetica, sans-serif; }
-    body { width: 800px; height: 480px; background-color: #ffffff; color: #000000; padding: 4px; overflow: hidden; }
-    .dashboard { display: grid; grid-template-columns: 210px 1fr 210px; gap: 4px; height: 472px; }
-    .border-box { border: 2px solid #000; border-radius: 10px; padding: 6px 8px; position: relative; background: #fff; }
-    .side-column { display: flex; flex-direction: column; gap: 4px; height: 100%; }
+    /* Globales Reset & E-Paper-Schriftoptimierung */
+    * { 
+      box-sizing: border-box; 
+      margin: 0; 
+      padding: 0; 
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+      -webkit-font-smoothing: none; /* Deaktiviert Unschärfe-Ränder für E-Paper */
+    }
+    
+    body { 
+      width: 800px; 
+      height: 480px; 
+      background-color: #ffffff; 
+      color: #000000; 
+      padding: 6px; 
+      overflow: hidden; 
+    }
+    
+    .dashboard { 
+      display: grid; 
+      grid-template-columns: 215px 1fr 215px; 
+      gap: 6px; 
+      height: 468px; 
+    }
+    
+    /* Rahmen auf 3px verstärkt für saubere Monochrom-Kanten */
+    .border-box { 
+      border: 3px solid #000000; 
+      border-radius: 8px; 
+      padding: 6px 8px; 
+      position: relative; 
+      background: #ffffff; 
+    }
+    
+    .side-column { display: flex; flex-direction: column; gap: 6px; height: 100%; }
     .room-card { flex: 1; display: flex; flex-direction: column; justify-content: space-between; align-items: center; text-align: center; }
-    .room-title { font-size: 20px; font-weight: bold; width: 100%; }
-    .room-temp-group { display: flex; flex-direction: column; align-items: center; line-height: 1.1; }
+    .room-title { font-size: 21px; font-weight: 800; width: 100%; letter-spacing: -0.5px; }
+    .room-temp-group { display: flex; flex-direction: column; align-items: center; line-height: 1.0; }
     .temp-display { display: inline-flex; align-items: baseline; white-space: nowrap; }
-    .temp-val-num { font-size: 42px; font-weight: bold; letter-spacing: -1px; }
-    .degree-symbol { font-size: 34px; font-weight: normal; vertical-align: top; line-height: 0.9; }
-    .unit-c-group { font-size: 26px; font-weight: normal; }
-    .trend-text { font-size: 14px; font-weight: bold; margin-top: -2px; }
-    .co2-inner-box { border: 2px solid #000; border-radius: 6px; width: 90%; padding: 3px 6px; display: grid; grid-template-columns: 1fr auto; grid-template-rows: auto auto; align-items: center; margin: 2px auto; background-color: #fff; }
-    .co2-title { grid-column: 1 / span 2; font-size: 18px; font-weight: bold; text-align: center; margin-bottom: 2px; }
-    .co2-val { font-size: 30px; font-weight: bold; text-align: center; line-height: 1; }
-    .co2-badge { border: 1.5px solid #000; border-radius: 3px; padding: 2px 4px; font-size: 12px; font-weight: bold; display: inline-flex; align-items: center; justify-content: center; line-height: 1; height: 20px; }
-    .humidity-text { font-size: 14px; font-weight: normal; }
-    .hum-val { font-size: 18px; font-weight: bold; }
-    .center-column { display: flex; flex-direction: column; gap: 4px; height: 100%; }
+    .temp-val-num { font-size: 46px; font-weight: 900; letter-spacing: -1.5px; }
+    .degree-symbol { font-size: 36px; font-weight: bold; vertical-align: top; line-height: 0.9; }
+    .unit-c-group { font-size: 28px; font-weight: bold; }
+    .trend-text { font-size: 14px; font-weight: 800; margin-top: 1px; }
+    
+    /* CO2-Boxen mit klaren 2px Rahmen */
+    .co2-inner-box { 
+      border: 2px solid #000000; 
+      border-radius: 6px; 
+      width: 95%; 
+      padding: 3px 6px; 
+      display: grid; 
+      grid-template-columns: 1fr auto; 
+      grid-template-rows: auto auto; 
+      align-items: center; 
+      margin: 2px auto; 
+      background-color: #ffffff; 
+    }
+    
+    .co2-title { grid-column: 1 / span 2; font-size: 16px; font-weight: 800; text-align: center; margin-bottom: 2px; }
+    .co2-val { font-size: 32px; font-weight: 900; text-align: center; line-height: 1; }
+    .co2-badge { border: 2px solid #000000; border-radius: 4px; padding: 2px 4px; font-size: 12px; font-weight: 800; display: inline-flex; align-items: center; justify-content: center; line-height: 1; height: 20px; }
+    
+    .humidity-text { font-size: 14px; font-weight: 700; }
+    .hum-val { font-size: 19px; font-weight: 900; }
+    
+    .center-column { display: flex; flex-direction: column; gap: 6px; height: 100%; }
     .top-center { flex: 1.1; display: flex; flex-direction: column; justify-content: space-between; }
-    .forecast-title { text-align: center; font-size: 14px; font-weight: bold; border-bottom: 1px solid #000; padding-bottom: 2px; }
+    .forecast-title { text-align: center; font-size: 15px; font-weight: 800; border-bottom: 2px solid #000000; padding-bottom: 3px; }
     .forecast-days-container { display: flex; justify-content: space-around; align-items: center; padding: 4px 0; }
     .day-item { display: flex; flex-direction: column; align-items: center; text-align: center; }
-    .day-name { font-size: 15px; font-weight: bold; }
-    .mono-symbol { font-size: 24px; font-weight: bold; margin: 2px 0; line-height: 1; }
-    .day-temp { font-size: 17px; font-weight: bold; white-space: nowrap; }
-    .astro-info-row { display: flex; justify-content: space-between; font-size: 11px; border-top: 1px solid #ccc; padding-top: 2px; }
+    .day-name { font-size: 16px; font-weight: 800; }
+    .mono-symbol { font-size: 26px; font-weight: 900; margin: 2px 0; line-height: 1; }
+    .day-temp { font-size: 18px; font-weight: 900; white-space: nowrap; }
+    
+    .astro-info-row { display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; border-top: 1px solid #000000; padding-top: 3px; }
     .bottom-center { flex: 0.9; display: flex; flex-direction: column; justify-content: space-between; }
     .meteo-5h-container { display: flex; justify-content: space-between; align-items: center; padding: 2px 0; }
     .meteo-hour-item { display: flex; flex-direction: column; align-items: center; text-align: center; flex: 1; }
-    .meteo-time { font-size: 13px; font-weight: bold; }
-    .meteo-temp { font-size: 15px; font-weight: bold; white-space: nowrap; }
-    .date-display { text-align: center; border-top: 1px solid #000; padding-top: 4px; }
-    .date-main { font-size: 17px; font-weight: bold; }
-    .date-sub { font-size: 11px; }
+    .meteo-time { font-size: 13px; font-weight: 800; }
+    .meteo-temp { font-size: 16px; font-weight: 900; white-space: nowrap; }
+    
+    .date-display { text-align: center; border-top: 2px solid #000000; padding-top: 3px; }
+    .date-main { font-size: 18px; font-weight: 900; }
+    .date-sub { font-size: 11px; font-weight: 700; }
   </style>
 </head>
 <body>
@@ -86,13 +134,13 @@
             <span class="mono-symbol" id="fc-icon-0">&#9728;</span>
             <span class="day-temp"><span id="fc-max-0">--°</span> / <span id="fc-min-0">--°</span></span>
           </div>
-          <div style="border-left: 1px solid #000; height: 35px;"></div>
+          <div style="border-left: 2px solid #000; height: 35px;"></div>
           <div class="day-item">
             <span class="day-name">Morgen</span>
             <span class="mono-symbol" id="fc-icon-1">&#9729;</span>
             <span class="day-temp"><span id="fc-max-1">--°</span> / <span id="fc-min-1">--°</span></span>
           </div>
-          <div style="border-left: 1px solid #000; height: 35px;"></div>
+          <div style="border-left: 2px solid #000; height: 35px;"></div>
           <div class="day-item">
             <span class="day-name">Überm.</span>
             <span class="mono-symbol" id="fc-icon-2">&#9748;</span>
@@ -104,7 +152,7 @@
           <div>
             <b id="sunrise-time">--:--</b> Sonnenaufg.<br>
             <b id="sunset-time">--:--</b> Sonnenunterg.<br>
-            <small>Mond: Zunehmende Sichel | Sternzeichen: Löwe</small>
+            <small style="font-weight: bold;">Mond: Zunehmende Sichel | Sternzeichen: Löwe</small>
           </div>
           <div style="text-align: right;">
             WLAN: <b>-76dBm</b><br>
@@ -114,36 +162,36 @@
       </div>
 
       <div class="border-box bottom-center">
-        <div style="font-size: 11px; font-weight: bold; text-align: center; border-bottom: 1px dashed #aaa; padding-bottom: 1px;">5 Stunden Trend</div>
+        <div style="font-size: 12px; font-weight: 800; text-align: center; border-bottom: 2px dashed #000; padding-bottom: 1px;">5 Stunden Trend</div>
         <div class="meteo-5h-container">
           <div class="meteo-hour-item">
             <span class="meteo-time" id="m-time-0">--:00</span>
-            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-0">&#9728;</span>
+            <span class="mono-symbol" style="font-size: 18px;" id="m-icon-0">&#9728;</span>
             <span class="meteo-temp" id="m-temp-0">--°</span>
           </div>
           <div class="meteo-hour-item">
             <span class="meteo-time" id="m-time-1">--:00</span>
-            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-1">&#9728;</span>
+            <span class="mono-symbol" style="font-size: 18px;" id="m-icon-1">&#9728;</span>
             <span class="meteo-temp" id="m-temp-1">--°</span>
           </div>
           <div class="meteo-hour-item">
             <span class="meteo-time" id="m-time-2">--:00</span>
-            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-2">&#9729;</span>
+            <span class="mono-symbol" style="font-size: 18px;" id="m-icon-2">&#9729;</span>
             <span class="meteo-temp" id="m-temp-2">--°</span>
           </div>
           <div class="meteo-hour-item">
             <span class="meteo-time" id="m-time-3">--:00</span>
-            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-3">&#9729;</span>
+            <span class="mono-symbol" style="font-size: 18px;" id="m-icon-3">&#9729;</span>
             <span class="meteo-temp" id="m-temp-3">--°</span>
           </div>
           <div class="meteo-hour-item">
             <span class="meteo-time" id="m-time-4">--:00</span>
-            <span class="mono-symbol" style="font-size: 16px;" id="m-icon-4">&#9748;</span>
+            <span class="mono-symbol" style="font-size: 18px;" id="m-icon-4">&#9748;</span>
             <span class="meteo-temp" id="m-temp-4">--°</span>
           </div>
         </div>
 
-        <div style="display: flex; justify-content: space-between; font-size: 11px; border-top: 1px dashed #aaa; padding-top: 2px;">
+        <div style="display: flex; justify-content: space-between; font-size: 11px; font-weight: 700; border-top: 2px dashed #000; padding-top: 2px;">
           <div><b>Wind:</b> <span>2.0 m/s WSW</span></div>
           <div><b>Regen:</b> <span>0 mm/24h</span></div>
         </div>
