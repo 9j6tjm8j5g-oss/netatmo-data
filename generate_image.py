@@ -14,7 +14,7 @@ def start_server():
     httpd.serve_forever()
 
 def create_epaper_bmp():
-    # 1. Lokalen Webserver im Hintergrund starten
+    # 1. Lokalen Webserver starten
     server_thread = threading.Thread(target=start_server, daemon=True)
     server_thread.start()
 
@@ -22,19 +22,17 @@ def create_epaper_bmp():
     with sync_playwright() as p:
         browser = p.chromium.launch()
         
-        # Exakt 800x480 Viewport erzwingen
+        # device_scale_factor=2 sorgt für Gestochen scharfe Schrift (Retina/HD)
         context = browser.new_context(
             viewport={"width": 800, "height": 480},
-            device_scale_factor=1,
+            device_scale_factor=2,
             timezone_id="Europe/Berlin",
             extra_http_headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
         )
         page = context.new_page()
-        
-        # E-Paper HTML Seite aufrufen
         page.goto(f"http://localhost:{PORT}/epaper.html")
         
-        # CSS-Injection: Zwingt Body und HTML auf volle 800x480 ohne Abstände
+        # CSS Injection für knallharte Schwarz-Weiß-Ränder ohne Grauschleier
         page.add_style_tag(content="""
             html, body {
                 width: 800px !important;
@@ -43,38 +41,36 @@ def create_epaper_bmp():
                 padding: 0 !important;
                 overflow: hidden !important;
                 background-color: #ffffff !important;
+                -webkit-font-smoothing: none !important;
+            }
+            * {
+                box-sizing: border-box !important;
             }
         """)
         
-        # 3. Warten auf JS 'ready' Signal
         page.wait_for_function("window.status === 'ready'", timeout=10000)
         
-        # 4. Screenshot exakt in 800x480 aufnehmen
         temp_png = "epaper_temp.png"
-        page.screenshot(path=temp_png, clip={"x": 0, "y": 0, "width": 800, "height": 480})
-        
+        page.screenshot(path=temp_png)
         browser.close()
 
-    # 5. PNG ohne Dithering (messerscharf) in 1-Bit BMP umwandeln
+    # 3. Bildverarbeitung: Scharfes Binarisieren
     with Image.open(temp_png) as img:
-        # Auf 800x480 absichern
-        img = img.resize((800, 480))
+        # Exakt auf 800x480 mit hochwertigem Resampling bringen
+        img = img.resize((800, 480), Image.Resampling.LANCZOS)
         
-        # In Graustufen konvertieren
+        # In Graustufen umwandeln
         gray = img.convert("L")
         
-        # Schwellenwert: Alles heller als 128 wird Weiß, der Rest Schwarz
-        threshold = 128
-        bmp_img = gray.point(lambda p: 255 if p > threshold else 0).convert("1", dither=Image.Dither.NONE)
+        # Dithering (Floyd-Steinberg) verhindert klumpige Treppenstufen
+        bmp_img = gray.convert("1", dither=Image.Dither.FLOYDSTEINBERG)
         
-        # Als 1-Bit Monochrom BMP speichern
         bmp_img.save("epaper.bmp", "BMP")
 
-    # Temp-Datei aufräumen
     if os.path.exists(temp_png):
         os.remove(temp_png)
 
-    print("Erfolg: epaper.bmp wurde in 800x480 scharf erstellt!")
+    print("Erfolg: epaper.bmp messerscharf generiert!")
 
 if __name__ == "__main__":
     create_epaper_bmp()
