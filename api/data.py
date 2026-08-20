@@ -1,72 +1,57 @@
-import os
-import requests
-from http.server import BaseHTTPRequestHandler
 import json
+import os
+import urllib.parse
+import urllib.request
+from http.server import BaseHTTPRequestHandler
+
 
 class handler(BaseHTTPRequestHandler):
-    def do_GET(self):
-        token_url = "https://api.netatmo.com/oauth2/token"
-        payload = {
-            "grant_type": "refresh_token",
-            "client_id": os.environ.get("NETATMO_CLIENT_ID"),
-            "client_secret": os.environ.get("NETATMO_CLIENT_SECRET"),
-            "refresh_token": os.environ.get("NETATMO_REFRESH_TOKEN"),
-        }
-        
-        try:
-            res = requests.post(token_url, data=payload, timeout=5)
-            token_data = res.json()
-            access_token = token_data.get("access_token")
 
-            station_url = "https://api.netatmo.com/api/getstationsdata"
-            headers = {"Authorization": f"Bearer {access_token}"}
-            netatmo_res = requests.get(station_url, headers=headers, timeout=5).json()
+  def do_GET(self):
+    client_id = os.environ.get('NETATMO_CLIENT_ID')
+    client_secret = os.environ.get('NETATMO_CLIENT_SECRET')
+    refresh_token = os.environ.get('NETATMO_REFRESH_TOKEN')
 
-            meteo_url = "https://api.open-meteo.com/v1/forecast?latitude=49.5606&longitude=7.0142&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&daily=weathercode,temperature_2m_max,temperature_2m_min&timezone=Europe%2FBerlin"
-            meteo_data = requests.get(meteo_url, timeout=5).json()
+    if not all([client_id, client_secret, refresh_token]):
+      self.send_response(500)
+      self.send_header('Content-type', 'application/json')
+      self.end_headers()
+      error_msg = json.dumps(
+          {'error': 'Missing environment variables on Vercel'}
+      )
+      self.wfile.write(error_msg.encode('utf-8'))
+      return
 
-            device = netatmo_res.get("body", {}).get("devices", [{}])[0]
-            
-            output = {
-                "timestamp": "Live",
-                "wohnzimmer": {},
-                "draussen": {},
-                "buero": {},
-                "og": {},
-                "druck": {},
-                "regen": {},
-                "vorhersage": meteo_data
-            }
+    try:
+      # Token erneuern
+      token_url = 'https://api.netatmo.com/oauth2/token'
+      payload = urllib.parse.urlencode({
+          'grant_type': 'refresh_token',
+          'refresh_token': refresh_token,
+          'client_id': client_id,
+          'client_secret': client_secret,
+      }).encode('utf-8')
 
-            if device:
-                dash = device.get("dashboard_data", {})
-                output["wohnzimmer"] = {"temp": dash.get("Temperature"), "hum": dash.get("Humidity"), "co2": dash.get("CO2"), "trend": dash.get("temp_trend")}
-                output["druck"] = {"val": dash.get("Pressure"), "trend": dash.get("pressure_trend")}
+      req = urllib.request.Request(
+          token_url, data=payload, method='POST'
+      )
+      with urllib.request.urlopen(req) as response:
+        token_data = json.loads(response.read().decode('utf-8'))
+        access_token = token_data.get('access_token')
 
-                for mod in device.get("modules", []):
-                    m_dash = mod.get("dashboard_data", {})
-                    m_type = mod.get("type")
-                    m_name = mod.get("module_name", "")
+      # Daten abrufen
+      data_url = f'https://api.netatmo.com/api/getstationsdata?access_token={access_token}'
+      with urllib.request.urlopen(data_url) as response:
+        station_data = json.loads(response.read().decode('utf-8'))
 
-                    if m_type == "NAModule1":
-                        output["draussen"] = {"temp": m_dash.get("Temperature"), "hum": m_dash.get("Humidity"), "trend": m_dash.get("temp_trend"), "battery": mod.get("battery_percent")}
-                    elif m_type == "NAModule4":
-                        if "Büro" in m_name or "Firma" in m_name:
-                            output["buero"] = {"temp": m_dash.get("Temperature"), "hum": m_dash.get("Humidity"), "co2": m_dash.get("CO2"), "trend": m_dash.get("temp_trend"), "battery": mod.get("battery_percent")}
-                        elif "OG" in m_name:
-                            output["og"] = {"temp": m_dash.get("Temperature"), "hum": m_dash.get("Humidity"), "co2": m_dash.get("CO2"), "trend": m_dash.get("temp_trend"), "battery": mod.get("battery_percent")}
-                    elif m_type == "NAModule3":
-                        output["regen"] = {"rain": m_dash.get("Rain"), "sum_1h": m_dash.get("sum_rain_1"), "sum_24h": m_dash.get("sum_rain_24"), "battery": mod.get("battery_percent")}
+      self.send_response(200)
+      self.send_header('Content-type', 'application/json')
+      self.send_header('Access-Control-Allow-Origin', '*')
+      self.end_headers()
+      self.wfile.write(json.dumps(station_data).encode('utf-8'))
 
-            self.send_response(200)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(json.dumps(output).encode('utf-8'))
-
-        except Exception as e:
-            self.send_response(500)
-            self.send_header('Content-Type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(json.dumps({"error": str(e)}).encode('utf-8'))
+    except Exception as e:
+      self.send_response(500)
+      self.send_header('Content-type', 'application/json')
+      self.end_headers()
+      self.wfile.write(json.dumps({'error': str(e)}).encode('utf-8'))
