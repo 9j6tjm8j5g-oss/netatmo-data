@@ -2,20 +2,20 @@
   "wohnzimmer": {
     "temp": 23.1,
     "hum": 70,
-    "co2": 469,
+    "co2": 460,
     "trend": "stable"
   },
   "buero": {
     "temp": 23.4,
     "hum": 62,
-    "co2": 439,
+    "co2": 440,
     "trend": "stable",
     "battery": 88
   },
   "og": {
     "temp": 23.9,
     "hum": 60,
-    "co2": 479,
+    "co2": 502,
     "trend": "stable",
     "battery": 54
   },
@@ -26,7 +26,7 @@
     "battery": 31
   },
   "druck": {
-    "val": 1005.3
+    "val": 1005.6
   },
   "regen": {
     "rain": 0,
@@ -37,7 +37,7 @@
   "vorhersage": {
     "latitude": 49.558,
     "longitude": 7.0179996,
-    "generationtime_ms": 7.4214935302734375,
+    "generationtime_ms": 4.470348358154297,
     "utc_offset_seconds": 7200,
     "timezone": "Europe/Berlin",
     "timezone_abbreviation": "GMT+2",
@@ -50,10 +50,10 @@
       "precipitation": "mm"
     },
     "current": {
-      "time": "2026-08-20T02:15",
+      "time": "2026-08-20T02:30",
       "interval": 900,
-      "wind_speed_10m": 10.8,
-      "wind_direction_10m": 273,
+      "wind_speed_10m": 11.5,
+      "wind_direction_10m": 278,
       "precipitation": 0.0
     },
     "hourly_units": {
@@ -197,20 +197,20 @@
         9.5,
         11.4,
         13.1,
-        14.2,
-        15.1,
-        16.1,
-        17.5,
-        18.2,
+        14.3,
+        15.3,
+        16.4,
+        17.6,
+        18.1,
+        18.7,
+        18.7,
         18.6,
-        18.8,
-        18.4,
-        17.9,
+        18.5,
         17.3,
-        15.7,
-        13.6,
+        15.6,
+        13.5,
         12.7,
-        12.3
+        12.5
       ],
       "weathercode": [
         51,
@@ -273,17 +273,17 @@
         0,
         0,
         0,
-        51,
         0,
-        0,
-        51,
-        51,
-        51,
         0,
         1,
         51,
+        51,
         1,
         1,
+        0,
+        1,
+        0,
+        0,
         3
       ],
       "precipitation_probability": [
@@ -418,18 +418,18 @@
         0.0,
         0.0,
         0.0,
-        0.03,
+        0.0,
         0.05,
+        0.08,
         0.0,
-        0.1,
-        0.0,
-        0.0,
-        0.1,
-        0.1,
-        0.1,
         0.0,
         0.0,
         0.1,
+        0.1,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
         0.0,
         0.0,
         0.0
@@ -452,7 +452,7 @@
       "temperature_2m_max": [
         20.0,
         20.1,
-        18.8
+        18.7
       ],
       "temperature_2m_min": [
         13.0,
@@ -476,6 +476,6 @@
       ]
     }
   },
-  "netatmo_messzeit": "02:16",
-  "timestamp": "02:22"
+  "netatmo_messzeit": "02:26",
+  "timestamp": "02:32"
 }
