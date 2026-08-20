@@ -342,7 +342,7 @@
 
     async function loadData() {
       try {
-        const res = await fetch('data.json?t=' + new Date().getTime());
+        const res = await fetch('https://netatmo-data-theta.vercel.app/api/data');
         const data = await res.json();
 
         document.getElementById('timestamp-text').innerText = `Zuletzt aktualisiert: ${data.timestamp || '--:--'} Uhr`;
