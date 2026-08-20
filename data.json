@@ -6,38 +6,38 @@
     "trend": "stable"
   },
   "buero": {
-    "temp": 22.9,
+    "temp": 23,
     "hum": 55,
-    "co2": 430,
+    "co2": 429,
     "trend": "stable",
     "battery": 88
   },
   "og": {
     "temp": 22.9,
     "hum": 54,
-    "co2": 403,
+    "co2": 419,
     "trend": "stable",
     "battery": 54
   },
   "draussen": {
-    "temp": 21.9,
-    "hum": 65,
-    "trend": "stable",
+    "temp": 22.1,
+    "hum": 64,
+    "trend": "up",
     "battery": 31
   },
   "druck": {
-    "val": 1008.9
+    "val": 1008.8
   },
   "regen": {
     "rain": 0,
     "sum_1h": 0,
     "sum_24h": 0,
-    "battery": 83
+    "battery": 82
   },
   "vorhersage": {
     "latitude": 49.558,
     "longitude": 7.0179996,
-    "generationtime_ms": 0.7772445678710938,
+    "generationtime_ms": 0.6805658340454102,
     "utc_offset_seconds": 7200,
     "timezone": "Europe/Berlin",
     "timezone_abbreviation": "GMT+2",
@@ -50,10 +50,10 @@
       "precipitation": "mm"
     },
     "current": {
-      "time": "2026-08-20T14:45",
+      "time": "2026-08-20T15:00",
       "interval": 900,
       "wind_speed_10m": 14.4,
-      "wind_direction_10m": 249,
+      "wind_direction_10m": 250,
       "precipitation": 0.0
     },
     "hourly_units": {
@@ -476,6 +476,6 @@
       ]
     }
   },
-  "netatmo_messzeit": "14:44",
-  "timestamp": "14:52"
+  "netatmo_messzeit": "14:54",
+  "timestamp": "15:02"
 }
