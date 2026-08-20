@@ -3,7 +3,7 @@
     "temp": 21.9,
     "hum": 66,
     "co2": 411,
-    "trend": "up"
+    "trend": "stable"
   },
   "buero": {
     "temp": 22.5,
@@ -37,7 +37,7 @@
   "vorhersage": {
     "latitude": 49.558,
     "longitude": 7.0179996,
-    "generationtime_ms": 11.902093887329102,
+    "generationtime_ms": 1.7986297607421875,
     "utc_offset_seconds": 7200,
     "timezone": "Europe/Berlin",
     "timezone_abbreviation": "GMT+2",
@@ -477,5 +477,5 @@
     }
   },
   "netatmo_messzeit": "12:02",
-  "timestamp": "12:07"
+  "timestamp": "12:12"
 }
