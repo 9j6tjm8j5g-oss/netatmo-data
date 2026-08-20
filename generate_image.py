@@ -14,66 +14,36 @@ def start_server():
     httpd.serve_forever()
 
 def create_epaper_bmp():
-    # 1. Lokalen Webserver starten
+    # 1. Server im Hintergrund
     server_thread = threading.Thread(target=start_server, daemon=True)
     server_thread.start()
 
-    # 2. Browser starten
+    # 2. Screenshot in exakt 800x480 erstellen
     with sync_playwright() as p:
         browser = p.chromium.launch()
-        
-        # device_scale_factor=2 sorgt für Gestochen scharfe Schrift (Retina/HD)
         context = browser.new_context(
             viewport={"width": 800, "height": 480},
-            device_scale_factor=2,
-            timezone_id="Europe/Berlin",
-            extra_http_headers={"Cache-Control": "no-cache, no-store, must-revalidate"}
+            device_scale_factor=1,
+            timezone_id="Europe/Berlin"
         )
         page = context.new_page()
         page.goto(f"http://localhost:{PORT}/epaper.html")
-        
-        # CSS Injection für knallharte Schwarz-Weiß-Ränder ohne Grauschleier
-        page.add_style_tag(content="""
-            html, body {
-                width: 800px !important;
-                height: 480px !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                overflow: hidden !important;
-                background-color: #ffffff !important;
-                -webkit-font-smoothing: none !important;
-            }
-            * {
-                box-sizing: border-box !important;
-            }
-        """)
-        
         page.wait_for_function("window.status === 'ready'", timeout=10000)
         
         temp_png = "epaper_temp.png"
         page.screenshot(path=temp_png)
         browser.close()
 
-   # 5. PNG messerscharf (ohne Dithering-Schmaddel) in 1-Bit BMP umwandeln
+    # 3. Direkte, saubere 1-Bit Umwandlung
     with Image.open(temp_png) as img:
-        # Exakt auf 800x480 skalieren
-        img = img.resize((800, 480), Image.Resampling.LANCZOS)
-        
-        # In reine Graustufen umwandeln
-        gray = img.convert("L")
-        
-        # SCHWELLENWERT-TRICK (Thresholding statt Dithering):
-        # Alle Grautöne dunkler als 180 werden knallhart SCHWARZ, alles andere WEISS.
-        # Das entfernt den Pixelschrott um Schriften und Symbole komplett!
-        threshold = 180
-        bmp_img = gray.point(lambda p: 0 if p < threshold else 255).convert("1")
-        
+        # Binarisierung ohne Dithering-Muster
+        bmp_img = img.convert("L").point(lambda p: 255 if p > 140 else 0).convert("1")
         bmp_img.save("epaper.bmp", "BMP")
 
     if os.path.exists(temp_png):
         os.remove(temp_png)
 
-    print("Erfolg: epaper.bmp messerscharf generiert!")
+    print("epaper.bmp erfolgreich erstellt!")
 
 if __name__ == "__main__":
     create_epaper_bmp()
