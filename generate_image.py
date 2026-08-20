@@ -54,16 +54,19 @@ def create_epaper_bmp():
         page.screenshot(path=temp_png)
         browser.close()
 
-    # 3. Bildverarbeitung: Scharfes Binarisieren
+   # 5. PNG messerscharf (ohne Dithering-Schmaddel) in 1-Bit BMP umwandeln
     with Image.open(temp_png) as img:
-        # Exakt auf 800x480 mit hochwertigem Resampling bringen
+        # Exakt auf 800x480 skalieren
         img = img.resize((800, 480), Image.Resampling.LANCZOS)
         
-        # In Graustufen umwandeln
+        # In reine Graustufen umwandeln
         gray = img.convert("L")
         
-        # Dithering (Floyd-Steinberg) verhindert klumpige Treppenstufen
-        bmp_img = gray.convert("1", dither=Image.Dither.FLOYDSTEINBERG)
+        # SCHWELLENWERT-TRICK (Thresholding statt Dithering):
+        # Alle Grautöne dunkler als 180 werden knallhart SCHWARZ, alles andere WEISS.
+        # Das entfernt den Pixelschrott um Schriften und Symbole komplett!
+        threshold = 180
+        bmp_img = gray.point(lambda p: 0 if p < threshold else 255).convert("1")
         
         bmp_img.save("epaper.bmp", "BMP")
 
