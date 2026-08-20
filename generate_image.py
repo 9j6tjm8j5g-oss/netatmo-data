@@ -40,10 +40,16 @@ def create_epaper_bmp():
         
         browser.close()
 
-    # 5. PNG in 1-Bit Schwarz-Weiß BMP umwandeln (für den ESP32)
+    # 5. PNG ohne Dithering (messerscharf) in 1-Bit BMP umwandeln
     with Image.open(temp_png) as img:
-        # '1' steht für 1-Bit Pixel (Monochrom: rein Schwarz/Weiß)
-        bmp_img = img.convert("1")
+        # Graustufen umwandeln
+        gray = img.convert("L")
+        
+        # Schwellenwert: Alles heller als 128 wird rein Weiß, der Rest rein Schwarz
+        # Dadurch verschwinden ausgefranste Kanten an Texten komplett!
+        threshold = 128
+        bmp_img = gray.point(lambda p: 255 if p > threshold else 0).convert("1", dither=Image.Dither.NONE)
+        
         bmp_img.save("epaper.bmp", "BMP")
 
     # Temp-Datei aufräumen
