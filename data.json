@@ -37,7 +37,7 @@
   "vorhersage": {
     "latitude": 49.558,
     "longitude": 7.0179996,
-    "generationtime_ms": 19.876599311828613,
+    "generationtime_ms": 3.1981468200683594,
     "utc_offset_seconds": 7200,
     "timezone": "Europe/Berlin",
     "timezone_abbreviation": "GMT+2",
@@ -50,10 +50,10 @@
       "precipitation": "mm"
     },
     "current": {
-      "time": "2026-08-20T03:30",
+      "time": "2026-08-20T03:45",
       "interval": 900,
-      "wind_speed_10m": 11.9,
-      "wind_direction_10m": 284,
+      "wind_speed_10m": 10.8,
+      "wind_direction_10m": 286,
       "precipitation": 0.0
     },
     "hourly_units": {
@@ -477,5 +477,5 @@
     }
   },
   "netatmo_messzeit": "03:37",
-  "timestamp": "03:42"
+  "timestamp": "03:45"
 }
