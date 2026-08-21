@@ -12,22 +12,29 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
+    /* Verhindert das Hochrutschen/Bouncen der Seite auf dem iPhone */
     html {
       background-color: #3E4865;
       height: 100%;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
     }
 
     body {
       background: linear-gradient(135deg, #3E4865 0%, #3E4B65 100%);
-      background-attachment: fixed;
       color: #f8fafc;
-      min-height: 100vh;
-      min-height: 100dvh;
-      padding: calc(16px + env(safe-area-inset-top)) 20px calc(16px + env(safe-area-inset-bottom));
+      height: 100%;
+      width: 100%;
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      padding-left: 20px;
+      padding-right: 20px;
       display: flex;
       justify-content: center;
       align-items: center;
-      overflow-x: hidden;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
     }
 
     .container {
@@ -35,6 +42,7 @@
       width: 100%;
       display: flex;
       flex-direction: column;
+      margin: auto;
     }
 
     header {
@@ -265,7 +273,7 @@
     .status-dot {
       width: 8px;
       height: 8px;
-      background-color: #eab308; /* Gelb beim Laden, Grün wenn fertig */
+      background-color: #eab308;
       border-radius: 50%;
       transition: background-color 0.3s ease;
     }
@@ -274,7 +282,6 @@
       background-color: #22c55e;
     }
 
-    /* Skeleton Loading CSS Animation */
     .skeleton-box {
       background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%);
       background-size: 200% 100%;
@@ -361,7 +368,6 @@
       return date.toLocaleDateString('de-DE', { weekday: 'short' });
     }
 
-    // Erzeugt Schimmer-Skelette für das sofortige Rendering
     function renderSkeletons() {
       const wrapper = document.getElementById('cards');
       const forecastWrapper = document.getElementById('forecast-cards');
@@ -387,7 +393,7 @@
       wrapper.innerHTML = 
         createSkeletonCard('Außenbereich', 'Außensensor', 'blue') +
         createSkeletonCard('Wohnzimmer', 'Hauptmodul', 'orange') +
-        createSkeletonCard('Büro / Firma', 'Zusatzmodul', 'purple') +
+        createSkeletonCard('Büro', 'Zusatzmodul', 'purple') +
         createSkeletonCard('Obergeschoss', 'Zusatzmodul OG', 'green');
 
       forecastWrapper.innerHTML = 
@@ -497,7 +503,7 @@
             <div class="card-icon">🏢</div>
             <div class="card-content">
               <div class="card-header">
-                <div class="card-title-group"><h3>Büro / Firma</h3><p>Zusatzmodul</p></div>
+                <div class="card-title-group"><h3>Büro</h3><p>Zusatzmodul</p></div>
                 ${getBatteryBadge(firma.battery_percent)}
               </div>
               <div class="metrics-box">
@@ -627,7 +633,7 @@
       dots.forEach((dot, idx) => dot.classList.toggle('active', idx === pageIndex));
     });
 
-    // 1. Lade gecachte Daten sofort (falls vorhanden)
+    // 1. Sofort vorhandenen Speicher auslesen
     const savedData = localStorage.getItem('netatmo_cache');
     if (savedData) {
       try {
@@ -637,7 +643,7 @@
       renderSkeletons();
     }
 
-    // 2. Erneuere die Daten im Hintergrund
+    // 2. Im Hintergrund frisch abrufen
     loadData();
   </script>
 </body>
