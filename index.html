@@ -12,10 +12,290 @@
       font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
     }
 
+    /* Verhindert das Hochrutschen/Bouncen der ganzen Seite in iOS Safari */
     html {
       background-color: #3E4865;
       height: 100%;
+      overflow: hidden;
+      position: fixed;
+      width: 100%;
     }
+
+    body {
+      background: linear-gradient(135deg, #3E4865 0%, #3E4B65 100%);
+      color: #f8fafc;
+      height: 100%;
+      width: 100%;
+      /* Exakte Safe-Area-Berechnung ohne VH-Bugs */
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
+      padding-left: 20px;
+      padding-right: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      overflow-y: auto; /* Vertikales Scrollen nur erlauben, wenn Bildschirm sehr klein ist */
+      -webkit-overflow-scrolling: touch;
+    }
+
+    .container {
+      max-width: 440px;
+      width: 100%;
+      display: flex;
+      flex-direction: column;
+      margin: auto;
+    }
+
+    header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+
+    .title-area h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+    }
+
+    .title-area p {
+      font-size: 0.8rem;
+      color: #94a3b8;
+      margin-top: 2px;
+    }
+
+    .reload-btn {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      color: #fff;
+      font-size: 1.1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: transform 0.3s ease;
+    }
+
+    .reload-btn.spinning {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
+    }
+
+    .pages-slider {
+      display: flex;
+      overflow-x: auto;
+      scroll-snap-type: x mandatory;
+      scroll-behavior: smooth;
+      -webkit-overflow-scrolling: touch;
+      scrollbar-width: none; 
+      -ms-overflow-style: none;
+      width: 100%;
+      border-radius: 16px;
+    }
+
+    .pages-slider::-webkit-scrollbar {
+      display: none;
+    }
+
+    .page {
+      flex: 0 0 100%;
+      min-width: 100%;
+      scroll-snap-align: start;
+      scroll-snap-stop: always;
+      box-sizing: border-box;
+    }
+
+    #page1 {
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .page-dots {
+      display: flex;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 16px;
+      margin-bottom: 6px;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.2);
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .dot.active {
+      background: #38bdf8;
+      width: 20px;
+      border-radius: 4px;
+    }
+
+    .cards-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 14px;
+    }
+
+    .card {
+      background: rgba(30, 41, 59, 0.7);
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-radius: 16px;
+      padding: 14px 16px;
+      display: flex;
+      gap: 12px;
+      position: relative;
+      overflow: hidden;
+      align-items: center;
+    }
+
+    .card::before {
+      content: '';
+      position: absolute;
+      left: 0;
+      top: 0;
+      bottom: 0;
+      width: 4px;
+    }
+
+    .card.blue::before { background-color: #38bdf8; }
+    .card.orange::before { background-color: #f97316; }
+    .card.purple::before { background-color: #a855f7; }
+    .card.green::before { background-color: #22c55e; }
+
+    .card-icon {
+      width: 42px;
+      height: 42px;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.05);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.15rem;
+      flex-shrink: 0;
+    }
+
+    .card-content {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 8px;
+    }
+
+    .card-title-group h3 {
+      font-size: 1.05rem;
+      font-weight: 600;
+    }
+
+    .card-title-group p {
+      font-size: 0.75rem;
+      color: #94a3b8;
+    }
+
+    .battery-badge {
+      font-size: 0.7rem;
+      color: #94a3b8;
+      background: rgba(255, 255, 255, 0.06);
+      padding: 2px 7px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .battery-badge.low {
+      color: #ef4444;
+      background: rgba(239, 68, 68, 0.15);
+    }
+
+    .metrics-box {
+      background: rgba(0, 0, 0, 0.2);
+      border-radius: 10px;
+      padding: 10px 14px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .metric {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .metric-label {
+      font-size: 0.6rem;
+      color: #94a3b8;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: 2px;
+    }
+
+    .metric-value {
+      font-size: 1.05rem;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+      color: #ffffff;
+    }
+
+    .trend {
+      font-size: 0.7rem;
+    }
+
+    .footer-status {
+      text-align: center;
+      margin-top: 12px;
+      font-size: 0.75rem;
+      color: #94a3b8;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .status-dot {
+      width: 8px;
+      height: 8px;
+      background-color: #eab308;
+      border-radius: 50%;
+      transition: background-color 0.3s ease;
+    }
+
+    .status-dot.active {
+      background-color: #22c55e;
+    }
+
+    .skeleton-box {
+      background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
+    }
+  </style>
 
     body {
       background: linear-gradient(135deg, #3E4865 0%, #3E4B65 100%);
