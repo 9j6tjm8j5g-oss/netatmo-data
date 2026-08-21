@@ -24,18 +24,16 @@
     body {
       background: linear-gradient(135deg, #3E4865 0%, #3E4B65 100%);
       color: #f8fafc;
-      height: 100%;
-      width: 100%;
-      /* Abstand nach oben auf 40px erhöht + Safe Area für Notch/Dynamic Island */
-      padding-top: max(40px, env(safe-area-inset-top));
-      padding-bottom: max(20px, env(safe-area-inset-bottom));
+      height: 100vh;
+      width: 100vw;
+      padding-top: max(16px, env(safe-area-inset-top));
+      padding-bottom: max(16px, env(safe-area-inset-bottom));
       padding-left: 20px;
       padding-right: 20px;
       display: flex;
-      justify-content: flex-start; /* Verhindert das Hochziehen bei wenig Inhalt */
-      align-items: center;
-      flex-direction: column;
-      overflow-y: auto;
+      justify-content: center; /* Vertikal zentrieren */
+      align-items: center;     /* Horizontal zentrieren */
+      overflow: hidden;
       -webkit-overflow-scrolling: touch;
     }
 
@@ -44,7 +42,7 @@
       width: 100%;
       display: flex;
       flex-direction: column;
-      margin: auto;
+      margin: auto 0; /* Sorgt für perfekten Ausgleich oben & unten */
     }
 
     header {
