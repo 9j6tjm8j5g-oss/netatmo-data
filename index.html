@@ -67,6 +67,15 @@
       display: flex;
       align-items: center;
       justify-content: center;
+      transition: transform 0.3s ease;
+    }
+
+    .reload-btn.spinning {
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      100% { transform: rotate(360deg); }
     }
 
     .pages-slider {
@@ -256,8 +265,27 @@
     .status-dot {
       width: 8px;
       height: 8px;
-      background-color: #22c55e;
+      background-color: #eab308; /* Gelb beim Laden, Grün wenn fertig */
       border-radius: 50%;
+      transition: background-color 0.3s ease;
+    }
+
+    .status-dot.active {
+      background-color: #22c55e;
+    }
+
+    /* Skeleton Loading CSS Animation */
+    .skeleton-box {
+      background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.15) 50%, rgba(255,255,255,0.05) 75%);
+      background-size: 200% 100%;
+      animation: skeleton-loading 1.5s infinite;
+      border-radius: 6px;
+      display: inline-block;
+    }
+
+    @keyframes skeleton-loading {
+      0% { background-position: 200% 0; }
+      100% { background-position: -200% 0; }
     }
   </style>
 </head>
@@ -269,21 +297,21 @@
         <h1>Netatmo Wetter</h1>
         <p>Live-Klimadaten & Prognose</p>
       </div>
-      <button class="reload-btn" onclick="loadData()">↻</button>
+      <button class="reload-btn" id="reload-btn" onclick="loadData()">↻</button>
     </header>
 
     <div class="pages-slider" id="slider">
       <!-- SEITE 1: Netatmo Wetterkarten -->
       <div class="page" id="page1">
         <div class="cards-wrapper" id="cards">
-          <!-- Wird per JS befüllt -->
+          <!-- Platzhalter wird per JS initial gesetzt -->
         </div>
       </div>
 
       <!-- SEITE 2: Regensensor & Open-Meteo Vorhersage -->
       <div class="page" id="page2">
         <div class="cards-wrapper" id="forecast-cards">
-          <!-- Wird per JS befüllt -->
+          <!-- Platzhalter wird per JS initial gesetzt -->
         </div>
       </div>
     </div>
@@ -294,8 +322,8 @@
     </div>
 
     <div class="footer-status">
-      <span class="status-dot"></span>
-      <span id="timestamp-text">Zuletzt aktualisiert: --:-- Uhr</span>
+      <span class="status-dot" id="status-dot"></span>
+      <span id="timestamp-text">Werte werden geladen...</span>
     </div>
   </div>
 
@@ -333,21 +361,55 @@
       return date.toLocaleDateString('de-DE', { weekday: 'short' });
     }
 
+    // Erzeugt Schimmer-Skelette für das sofortige Rendering
+    function renderSkeletons() {
+      const wrapper = document.getElementById('cards');
+      const forecastWrapper = document.getElementById('forecast-cards');
+
+      const createSkeletonCard = (title, subtitle, color) => `
+        <div class="card ${color}">
+          <div class="card-icon"><span class="skeleton-box" style="width: 24px; height: 24px;"></span></div>
+          <div class="card-content">
+            <div class="card-header">
+              <div class="card-title-group">
+                <h3>${title}</h3>
+                <p>${subtitle}</p>
+              </div>
+            </div>
+            <div class="metrics-box">
+              <div class="metric"><span class="metric-label">Temp</span><span class="skeleton-box" style="width: 50px; height: 18px;"></span></div>
+              <div class="metric"><span class="metric-label">Feuchte</span><span class="skeleton-box" style="width: 40px; height: 18px;"></span></div>
+              <div class="metric"><span class="metric-label">Wert</span><span class="skeleton-box" style="width: 45px; height: 18px;"></span></div>
+            </div>
+          </div>
+        </div>`;
+
+      wrapper.innerHTML = 
+        createSkeletonCard('Außenbereich', 'Außensensor', 'blue') +
+        createSkeletonCard('Wohnzimmer', 'Hauptmodul', 'orange') +
+        createSkeletonCard('Büro / Firma', 'Zusatzmodul', 'purple') +
+        createSkeletonCard('Obergeschoss', 'Zusatzmodul OG', 'green');
+
+      forecastWrapper.innerHTML = 
+        createSkeletonCard('Regensensor', 'Netatmo Regenmesser', 'blue') +
+        createSkeletonCard('3-Tage Vorhersage', 'Nohfelden', 'green');
+    }
+
     async function loadData() {
+      const btn = document.getElementById('reload-btn');
+      const dot = document.getElementById('status-dot');
+      btn.classList.add('spinning');
+      dot.classList.remove('active');
+
       try {
-        // 1. Daten von Vercel Serverless-Funktion laden
         const res = await fetch('https://netatmo-data-theta.vercel.app/api/data');
         const rawJson = await res.json();
         
         const rawData = rawJson.body ? rawJson.body : rawJson;
         const mainDevice = rawData.devices ? rawData.devices[0] : null;
 
-        if (!mainDevice) {
-          console.error("Keine Geräte-Daten gefunden");
-          return;
-        }
+        if (!mainDevice) return;
 
-        // Module nach Namen/Typen zuordnen
         const modules = mainDevice.modules || [];
         const findMod = (name) => modules.find(m => m.module_name?.toLowerCase() === name.toLowerCase()) || {};
         const findModByType = (type) => modules.find(m => m.type === type) || {};
@@ -356,9 +418,8 @@
         const firma = findMod('Firma');
         const keller = findMod('Keller');
         const og = findMod('OG');
-        const regen = findModByType('NAModule2'); // Regensensor
+        const regen = findModByType('NAModule2');
 
-        // Open-Meteo Vorhersage für Nohfelden laden
         let forecastData = null;
         try {
           const lat = mainDevice.place?.location?.[1] || 49.58;
@@ -366,277 +427,217 @@
           const forecastRes = await fetch(`https://api.open-meteo.com/v1/forecast?latitude=${lat}&longitude=${lon}&daily=weathercode,temperature_2m_max,temperature_2m_min&hourly=temperature_2m,precipitation_probability,precipitation,weathercode&timezone=Europe%2FBerlin`);
           forecastData = await forecastRes.json();
         } catch(fErr) {
-          console.error("Fehler beim Laden der Vorhersage:", fErr);
+          console.error("Fehler bei Vorhersage:", fErr);
         }
 
-        // Aktualisierungszeit
         const now = new Date();
-        document.getElementById('timestamp-text').innerText = `Zuletzt aktualisiert: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} Uhr`;
+        const timeText = `Zuletzt aktualisiert: ${now.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})} Uhr`;
 
-        // ================= SEITE 1: NETATMO SENSOREN =================
-        const wrapper = document.getElementById('cards');
-        wrapper.innerHTML = '';
+        const cachedPayload = {
+          mainDevice, draussen, firma, keller, og, regen, forecastData, timeText
+        };
+        localStorage.setItem('netatmo_cache', JSON.stringify(cachedPayload));
 
-        // 1. Außenbereich
-        if (draussen.dashboard_data) {
-          const druck = mainDevice.dashboard_data?.Pressure;
-          const druckGerundet = druck ? Math.round(druck) : '--';
-          wrapper.innerHTML += `
-            <div class="card blue">
-              <div class="card-icon">☀️</div>
-              <div class="card-content">
-                <div class="card-header">
-                  <div class="card-title-group">
-                    <h3>Außenbereich</h3>
-                    <p>Außensensor</p>
-                  </div>
-                  ${getBatteryBadge(draussen.battery_percent)}
-                </div>
-                <div class="metrics-box">
-                  <div class="metric">
-                    <span class="metric-label">Temp</span>
-                    <span class="metric-value">${draussen.dashboard_data.Temperature ?? '--'} °C ${getTrendIcon(draussen.dashboard_data.temp_trend)}</span>
-                  </div>
-                  <div class="metric">
-                    <span class="metric-label">Feuchte</span>
-                    <span class="metric-value">${draussen.dashboard_data.Humidity ?? '--'} %</span>
-                  </div>
-                  <div class="metric">
-                    <span class="metric-label">Druck</span>
-                    <span class="metric-value">${druckGerundet} hPa ${getTrendIcon(mainDevice.dashboard_data?.pressure_trend)}</span>
-                  </div>
-                </div>
-              </div>
-            </div>`;
-        }
-
-        // 2. Wohnzimmer
-        if (mainDevice.dashboard_data) {
-          wrapper.innerHTML += `
-            <div class="card orange">
-              <div class="card-icon">📻</div>
-              <div class="card-content">
-                <div class="card-header">
-                  <div class="card-title-group">
-                    <h3>Wohnzimmer</h3>
-                    <p>Hauptmodul</p>
-                  </div>
-                </div>
-                <div class="metrics-box">
-                  <div class="metric">
-                    <span class="metric-label">Temp</span>
-                    <span class="metric-value">${mainDevice.dashboard_data.Temperature ?? '--'} °C ${getTrendIcon(mainDevice.dashboard_data.temp_trend)}</span>
-                  </div>
-                  <div class="metric">
-                    <span class="metric-label">Feuchte</span>
-                    <span class="metric-value">${mainDevice.dashboard_data.Humidity ?? '--'} %</span>
-                  </div>
-                  <div class="metric">
-                    <span class="metric-label">CO₂</span>
-                    <span class="metric-value">${mainDevice.dashboard_data.CO2 ?? '--'} ppm</span>
-                  </div>
-                </div>
-              </div>
-            </div>`;
-        }
-
-        // 3. Büro / Firma
-        if (firma.dashboard_data) {
-          wrapper.innerHTML += `
-            <div class="card purple">
-              <div class="card-icon">🏢</div>
-              <div class="card-content">
-                <div class="card-header">
-                  <div class="card-title-group">
-                    <h3>Büro / Firma</h3>
-                    <p>Zusatzmodul</p>
-                  </div>
-                  ${getBatteryBadge(firma.battery_percent)}
-                </div>
-                <div class="metrics-box">
-                  <div class="metric">
-                    <span class="metric-label">Temp</span>
-                    <span class="metric-value">${firma.dashboard_data.Temperature ?? '--'} °C ${getTrendIcon(firma.dashboard_data.temp_trend)}</span>
-                  </div>
-                  <div class="metric">
-                    <span class="metric-label">Feuchte</span>
-                    <span class="metric-value">${firma.dashboard_data.Humidity ?? '--'} %</span>
-                  </div>
-                  <div class="metric">
-                    <span class="metric-label">CO₂</span>
-                    <span class="metric-value">${firma.dashboard_data.CO2 ?? '--'} ppm</span>
-                  </div>
-                </div>
-              </div>
-            </div>`;
-        }
-
-        // 4. Obergeschoss (OG)
-        if (og.dashboard_data) {
-          wrapper.innerHTML += `
-            <div class="card green">
-              <div class="card-icon">🏠</div>
-              <div class="card-content">
-                <div class="card-header">
-                  <div class="card-title-group">
-                    <h3>Obergeschoss</h3>
-                    <p>Zusatzmodul OG</p>
-                  </div>
-                  ${getBatteryBadge(og.battery_percent)}
-                </div>
-                <div class="metrics-box">
-                  <div class="metric">
-                    <span class="metric-label">Temp</span>
-                    <span class="metric-value">${og.dashboard_data.Temperature ?? '--'} °C ${getTrendIcon(og.dashboard_data.temp_trend)}</span>
-                  </div>
-                  <div class="metric">
-                    <span class="metric-label">Feuchte</span>
-                    <span class="metric-value">${og.dashboard_data.Humidity ?? '--'} %</span>
-                  </div>
-                  <div class="metric">
-                    <span class="metric-label">CO₂</span>
-                    <span class="metric-value">${og.dashboard_data.CO2 ?? '--'} ppm</span>
-                  </div>
-                </div>
-              </div>
-            </div>`;
-        }
-
-        // ================= SEITE 2: REGENSENSOR & FORECAST =================
-        const forecastWrapper = document.getElementById('forecast-cards');
-        forecastWrapper.innerHTML = '';
-
-        // Regensensor
-        if (regen.dashboard_data) {
-          wrapper.innerHTML = wrapper.innerHTML; // Refresh
-          forecastWrapper.innerHTML += `
-            <div class="card blue">
-              <div class="card-icon">🌧️</div>
-              <div class="card-content">
-                <div class="card-header">
-                  <div class="card-title-group">
-                    <h3>Regensensor</h3>
-                    <p>Netatmo Regenmesser</p>
-                  </div>
-                  ${getBatteryBadge(regen.battery_percent)}
-                </div>
-                <div class="metrics-box">
-                  <div class="metric">
-                    <span class="metric-label">Aktuell</span>
-                    <span class="metric-value" style="color: #38bdf8;">${regen.dashboard_data.Rain ?? 0} mm/h</span>
-                  </div>
-                  <div class="metric">
-                    <span class="metric-label">Letzte Std</span>
-                    <span class="metric-value">${regen.dashboard_data.sum_rain_1 ?? 0} mm</span>
-                  </div>
-                  <div class="metric">
-                    <span class="metric-label">24 Std</span>
-                    <span class="metric-value">${regen.dashboard_data.sum_rain_24 ?? 0} mm</span>
-                  </div>
-                </div>
-              </div>
-            </div>`;
-        }
-
-        // Open-Meteo 3-Tage-Vorhersage
-        if (forecastData && forecastData.daily) {
-          const daily = forecastData.daily;
-          let dailyHTML = `
-            <div class="card green">
-              <div class="card-icon">📅</div>
-              <div class="card-content">
-                <div class="card-header">
-                  <div class="card-title-group">
-                    <h3>3-Tage Vorhersage</h3>
-                    <p>Nohfelden</p>
-                  </div>
-                </div>
-                <div style="display: flex; flex-direction: column; gap: 4px;">`;
-
-          for (let i = 0; i < daily.time.length && i < 3; i++) {
-            const dayName = getDayName(daily.time[i]);
-            const wInfo = getWeatherInfo(daily.weathercode[i]);
-            const max = Math.round(daily.temperature_2m_max[i]);
-            const min = Math.round(daily.temperature_2m_min[i]);
-
-            dailyHTML += `
-              <div class="metrics-box" style="padding: 6px 10px;">
-                <span style="font-weight: 600; width: 45px;">${dayName}</span>
-                <span style="font-size: 0.9rem;">${wInfo.icon}</span>
-                <span style="font-size: 0.75rem; color: #94a3b8; flex: 1; margin-left: 6px;">${wInfo.desc}</span>
-                <span style="font-weight: 700; font-size: 0.8rem;">${max}° / <span style="color: #38bdf8;">${min}°</span></span>
-              </div>`;
-          }
-          dailyHTML += `</div></div></div>`;
-          forecastWrapper.innerHTML += dailyHTML;
-
-          // Stündlicher Trend
-          if (forecastData.hourly && forecastData.hourly.time) {
-            const hourly = forecastData.hourly;
-            const currentTime = new Date();
-            currentTime.setMinutes(0, 0, 0);
-
-            let hourlyHTML = `
-              <div class="card orange">
-                <div class="card-icon">⏱️</div>
-                <div class="card-content">
-                  <div class="card-header">
-                    <div class="card-title-group">
-                      <h3>Stündlicher Trend</h3>
-                      <p>Nächste 5 Stunden</p>
-                    </div>
-                  </div>
-                  <div style="display: flex; flex-direction: column; gap: 4px;">`;
-
-            let count = 0;
-            for (let i = 0; i < hourly.time.length; i++) {
-              const itemTime = new Date(hourly.time[i]);
-              if (itemTime >= currentTime && count < 5) {
-                const hourStr = itemTime.getHours().toString().padStart(2, '0') + ':00';
-                const temp = hourly.temperature_2m[i] !== undefined ? hourly.temperature_2m[i].toFixed(1) : '--';
-                const prob = hourly.precipitation_probability ? hourly.precipitation_probability[i] : 0;
-                const rain = hourly.precipitation ? hourly.precipitation[i] : 0;
-                const wInfo = getWeatherInfo(hourly.weathercode[i]);
-
-                hourlyHTML += `
-                  <div class="metrics-box" style="padding: 5px 10px; font-size: 0.75rem;">
-                    <span style="font-weight: 600; width: 45px;">${hourStr}</span>
-                    <span>${wInfo.icon}</span>
-                    <span style="font-weight: 700; white-space: nowrap; margin-left: auto; margin-right: 12px;">${temp} °C</span>
-                    <span style="color: #94a3b8;">💧 ${prob}% ${rain > 0 ? `(${rain}mm)` : ''}</span>
-                  </div>`;
-                count++;
-              }
-            }
-            hourlyHTML += `</div></div></div>`;
-            forecastWrapper.innerHTML += hourlyHTML;
-          }
-        }
+        renderData(cachedPayload);
 
       } catch (e) {
         console.error("Fehler beim Verarbeiten der Daten:", e);
+      } finally {
+        btn.classList.remove('spinning');
+        dot.classList.add('active');
       }
     }
 
-    // SLIDER LOGIK
+    function renderData(data) {
+      const { mainDevice, draussen, firma, og, regen, forecastData, timeText } = data;
+      document.getElementById('timestamp-text').innerText = timeText;
+
+      // ================= SEITE 1 =================
+      const wrapper = document.getElementById('cards');
+      wrapper.innerHTML = '';
+
+      if (draussen.dashboard_data) {
+        const druck = mainDevice.dashboard_data?.Pressure;
+        const druckGerundet = druck ? Math.round(druck) : '--';
+        wrapper.innerHTML += `
+          <div class="card blue">
+            <div class="card-icon">☀️</div>
+            <div class="card-content">
+              <div class="card-header">
+                <div class="card-title-group"><h3>Außenbereich</h3><p>Außensensor</p></div>
+                ${getBatteryBadge(draussen.battery_percent)}
+              </div>
+              <div class="metrics-box">
+                <div class="metric"><span class="metric-label">Temp</span><span class="metric-value">${draussen.dashboard_data.Temperature ?? '--'} °C ${getTrendIcon(draussen.dashboard_data.temp_trend)}</span></div>
+                <div class="metric"><span class="metric-label">Feuchte</span><span class="metric-value">${draussen.dashboard_data.Humidity ?? '--'} %</span></div>
+                <div class="metric"><span class="metric-label">Druck</span><span class="metric-value">${druckGerundet} hPa ${getTrendIcon(mainDevice.dashboard_data?.pressure_trend)}</span></div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      if (mainDevice.dashboard_data) {
+        wrapper.innerHTML += `
+          <div class="card orange">
+            <div class="card-icon">📻</div>
+            <div class="card-content">
+              <div class="card-header"><div class="card-title-group"><h3>Wohnzimmer</h3><p>Hauptmodul</p></div></div>
+              <div class="metrics-box">
+                <div class="metric"><span class="metric-label">Temp</span><span class="metric-value">${mainDevice.dashboard_data.Temperature ?? '--'} °C ${getTrendIcon(mainDevice.dashboard_data.temp_trend)}</span></div>
+                <div class="metric"><span class="metric-label">Feuchte</span><span class="metric-value">${mainDevice.dashboard_data.Humidity ?? '--'} %</span></div>
+                <div class="metric"><span class="metric-label">CO₂</span><span class="metric-value">${mainDevice.dashboard_data.CO2 ?? '--'} ppm</span></div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      if (firma.dashboard_data) {
+        wrapper.innerHTML += `
+          <div class="card purple">
+            <div class="card-icon">🏢</div>
+            <div class="card-content">
+              <div class="card-header">
+                <div class="card-title-group"><h3>Büro / Firma</h3><p>Zusatzmodul</p></div>
+                ${getBatteryBadge(firma.battery_percent)}
+              </div>
+              <div class="metrics-box">
+                <div class="metric"><span class="metric-label">Temp</span><span class="metric-value">${firma.dashboard_data.Temperature ?? '--'} °C ${getTrendIcon(firma.dashboard_data.temp_trend)}</span></div>
+                <div class="metric"><span class="metric-label">Feuchte</span><span class="metric-value">${firma.dashboard_data.Humidity ?? '--'} %</span></div>
+                <div class="metric"><span class="metric-label">CO₂</span><span class="metric-value">${firma.dashboard_data.CO2 ?? '--'} ppm</span></div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      if (og.dashboard_data) {
+        wrapper.innerHTML += `
+          <div class="card green">
+            <div class="card-icon">🏠</div>
+            <div class="card-content">
+              <div class="card-header">
+                <div class="card-title-group"><h3>Obergeschoss</h3><p>Zusatzmodul OG</p></div>
+                ${getBatteryBadge(og.battery_percent)}
+              </div>
+              <div class="metrics-box">
+                <div class="metric"><span class="metric-label">Temp</span><span class="metric-value">${og.dashboard_data.Temperature ?? '--'} °C ${getTrendIcon(og.dashboard_data.temp_trend)}</span></div>
+                <div class="metric"><span class="metric-label">Feuchte</span><span class="metric-value">${og.dashboard_data.Humidity ?? '--'} %</span></div>
+                <div class="metric"><span class="metric-label">CO₂</span><span class="metric-value">${og.dashboard_data.CO2 ?? '--'} ppm</span></div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      // ================= SEITE 2 =================
+      const forecastWrapper = document.getElementById('forecast-cards');
+      forecastWrapper.innerHTML = '';
+
+      if (regen.dashboard_data) {
+        forecastWrapper.innerHTML += `
+          <div class="card blue">
+            <div class="card-icon">🌧️</div>
+            <div class="card-content">
+              <div class="card-header">
+                <div class="card-title-group"><h3>Regensensor</h3><p>Netatmo Regenmesser</p></div>
+                ${getBatteryBadge(regen.battery_percent)}
+              </div>
+              <div class="metrics-box">
+                <div class="metric"><span class="metric-label">Aktuell</span><span class="metric-value" style="color: #38bdf8;">${regen.dashboard_data.Rain ?? 0} mm/h</span></div>
+                <div class="metric"><span class="metric-label">Letzte Std</span><span class="metric-value">${regen.dashboard_data.sum_rain_1 ?? 0} mm</span></div>
+                <div class="metric"><span class="metric-label">24 Std</span><span class="metric-value">${regen.dashboard_data.sum_rain_24 ?? 0} mm</span></div>
+              </div>
+            </div>
+          </div>`;
+      }
+
+      if (forecastData && forecastData.daily) {
+        const daily = forecastData.daily;
+        let dailyHTML = `
+          <div class="card green">
+            <div class="card-icon">📅</div>
+            <div class="card-content">
+              <div class="card-header"><div class="card-title-group"><h3>3-Tage Vorhersage</h3><p>Nohfelden</p></div></div>
+              <div style="display: flex; flex-direction: column; gap: 4px;">`;
+
+        for (let i = 0; i < daily.time.length && i < 3; i++) {
+          const dayName = getDayName(daily.time[i]);
+          const wInfo = getWeatherInfo(daily.weathercode[i]);
+          const max = Math.round(daily.temperature_2m_max[i]);
+          const min = Math.round(daily.temperature_2m_min[i]);
+
+          dailyHTML += `
+            <div class="metrics-box" style="padding: 6px 10px;">
+              <span style="font-weight: 600; width: 45px;">${dayName}</span>
+              <span style="font-size: 0.9rem;">${wInfo.icon}</span>
+              <span style="font-size: 0.75rem; color: #94a3b8; flex: 1; margin-left: 6px;">${wInfo.desc}</span>
+              <span style="font-weight: 700; font-size: 0.8rem;">${max}° / <span style="color: #38bdf8;">${min}°</span></span>
+            </div>`;
+        }
+        dailyHTML += `</div></div></div>`;
+        forecastWrapper.innerHTML += dailyHTML;
+
+        if (forecastData.hourly && forecastData.hourly.time) {
+          const hourly = forecastData.hourly;
+          const currentTime = new Date();
+          currentTime.setMinutes(0, 0, 0);
+
+          let hourlyHTML = `
+            <div class="card orange">
+              <div class="card-icon">⏱️</div>
+              <div class="card-content">
+                <div class="card-header"><div class="card-title-group"><h3>Stündlicher Trend</h3><p>Nächste 5 Stunden</p></div></div>
+                <div style="display: flex; flex-direction: column; gap: 4px;">`;
+
+          let count = 0;
+          for (let i = 0; i < hourly.time.length; i++) {
+            const itemTime = new Date(hourly.time[i]);
+            if (itemTime >= currentTime && count < 5) {
+              const hourStr = itemTime.getHours().toString().padStart(2, '0') + ':00';
+              const temp = hourly.temperature_2m[i] !== undefined ? hourly.temperature_2m[i].toFixed(1) : '--';
+              const prob = hourly.precipitation_probability ? hourly.precipitation_probability[i] : 0;
+              const rain = hourly.precipitation ? hourly.precipitation[i] : 0;
+              const wInfo = getWeatherInfo(hourly.weathercode[i]);
+
+              hourlyHTML += `
+                <div class="metrics-box" style="padding: 5px 10px; font-size: 0.75rem;">
+                  <span style="font-weight: 600; width: 45px;">${hourStr}</span>
+                  <span>${wInfo.icon}</span>
+                  <span style="font-weight: 700; white-space: nowrap; margin-left: auto; margin-right: 12px;">${temp} °C</span>
+                  <span style="color: #94a3b8;">💧 ${prob}% ${rain > 0 ? `(${rain}mm)` : ''}</span>
+                </div>`;
+              count++;
+            }
+          }
+          hourlyHTML += `</div></div></div>`;
+          forecastWrapper.innerHTML += hourlyHTML;
+        }
+      }
+    }
+
+    // INITIALISIERUNG
     const slider = document.getElementById('slider');
     const dots = document.querySelectorAll('.dot');
 
     function scrollToPage(index) {
       const pageWidth = slider.clientWidth;
-      slider.scrollTo({
-        left: pageWidth * index,
-        behavior: 'smooth'
-      });
+      slider.scrollTo({ left: pageWidth * index, behavior: 'smooth' });
     }
 
     slider.addEventListener('scroll', () => {
       const pageIndex = Math.round(slider.scrollLeft / slider.clientWidth);
-      dots.forEach((dot, idx) => {
-        dot.classList.toggle('active', idx === pageIndex);
-      });
+      dots.forEach((dot, idx) => dot.classList.toggle('active', idx === pageIndex));
     });
 
+    // 1. Lade gecachte Daten sofort (falls vorhanden)
+    const savedData = localStorage.getItem('netatmo_cache');
+    if (savedData) {
+      try {
+        renderData(JSON.parse(savedData));
+      } catch(e) { renderSkeletons(); }
+    } else {
+      renderSkeletons();
+    }
+
+    // 2. Erneuere die Daten im Hintergrund
     loadData();
   </script>
 </body>
