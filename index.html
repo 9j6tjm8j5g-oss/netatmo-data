@@ -418,14 +418,13 @@
 
         const modules = mainDevice.modules || [];
         const findMod = (name) => modules.find(m => m.module_name?.toLowerCase() === name.toLowerCase()) || {};
-        const findModByType = (type) => modules.find(m => m.type === type) || {};
 
         const draussen = findMod('Aussenbereich');
         const firma = findMod('Firma');
         const keller = findMod('Keller');
         const og = findMod('OG');
         
-        // Korrigierte Erkennung für den Netatmo Regensensor (NAModule3)
+        // Erkennung für den Netatmo Regensensor (NAModule3)
         const regen = modules.find(m => 
           m.type === 'NAModule3' || 
           m.module_name?.toLowerCase().includes('regen')
@@ -543,6 +542,11 @@
       forecastWrapper.innerHTML = '';
 
       if (regen.dashboard_data) {
+        // Runden der Regenwerte auf 1 Nachkommastelle gegen Fließkommafehler
+        const rainCurrent = regen.dashboard_data.Rain != null ? Number(regen.dashboard_data.Rain).toFixed(1) : '0';
+        const rain1h = regen.dashboard_data.sum_rain_1 != null ? Number(regen.dashboard_data.sum_rain_1).toFixed(1) : '0';
+        const rain24h = regen.dashboard_data.sum_rain_24 != null ? Number(regen.dashboard_data.sum_rain_24).toFixed(1) : '0';
+
         forecastWrapper.innerHTML += `
           <div class="card blue">
             <div class="card-icon">🌧️</div>
@@ -552,9 +556,9 @@
                 ${getBatteryBadge(regen.battery_percent)}
               </div>
               <div class="metrics-box">
-                <div class="metric"><span class="metric-label">Aktuell</span><span class="metric-value" style="color: #38bdf8;">${regen.dashboard_data.Rain ?? 0} mm/h</span></div>
-                <div class="metric"><span class="metric-label">Letzte Std</span><span class="metric-value">${regen.dashboard_data.sum_rain_1 ?? 0} mm</span></div>
-                <div class="metric"><span class="metric-label">24 Std</span><span class="metric-value">${regen.dashboard_data.sum_rain_24 ?? 0} mm</span></div>
+                <div class="metric"><span class="metric-label">Aktuell</span><span class="metric-value" style="color: #38bdf8;">${rainCurrent} mm/h</span></div>
+                <div class="metric"><span class="metric-label">Letzte Std</span><span class="metric-value">${rain1h} mm</span></div>
+                <div class="metric"><span class="metric-label">24 Std</span><span class="metric-value">${rain24h} mm</span></div>
               </div>
             </div>
           </div>`;
