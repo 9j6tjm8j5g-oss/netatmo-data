@@ -424,7 +424,7 @@
         const keller = findMod('Keller');
         const og = findMod('OG');
         
-        // Erkennung für den Netatmo Regensensor (NAModule3)
+        // Regensensor Erweiterung (NAModule3 oder Keyword "regen")
         const regen = modules.find(m => 
           m.type === 'NAModule3' || 
           m.module_name?.toLowerCase().includes('regen')
@@ -542,7 +542,7 @@
       forecastWrapper.innerHTML = '';
 
       if (regen.dashboard_data) {
-        // Runden der Regenwerte auf 1 Nachkommastelle gegen Fließkommafehler
+        // Gerundete Regenwerte auf 1 Nachkommastelle
         const rainCurrent = regen.dashboard_data.Rain != null ? Number(regen.dashboard_data.Rain).toFixed(1) : '0';
         const rain1h = regen.dashboard_data.sum_rain_1 != null ? Number(regen.dashboard_data.sum_rain_1).toFixed(1) : '0';
         const rain24h = regen.dashboard_data.sum_rain_24 != null ? Number(regen.dashboard_data.sum_rain_24).toFixed(1) : '0';
@@ -628,7 +628,7 @@
       }
     }
 
-    // INITIALISIERUNG
+    // INITIALISIERUNG & SLIDER
     const slider = document.getElementById('slider');
     const dots = document.querySelectorAll('.dot');
 
@@ -642,18 +642,33 @@
       dots.forEach((dot, idx) => dot.classList.toggle('active', idx === pageIndex));
     });
 
-    // 1. Sofort vorhandenen Speicher auslesen
-    const savedData = localStorage.getItem('netatmo_cache');
-    if (savedData) {
-      try {
-        renderData(JSON.parse(savedData));
-      } catch(e) { renderSkeletons(); }
-    } else {
-      renderSkeletons();
+    // SCHNELLES LADEN FÜR MOBILGERÄTE (Wachwerden nach Inaktivität abfangen)
+    function loadFromCacheAndFetch() {
+      // 1. Sofort gelagerte Daten anzeigen (0 ms Wartezeit)
+      const savedData = localStorage.getItem('netatmo_cache');
+      if (savedData) {
+        try {
+          renderData(JSON.parse(savedData));
+        } catch(e) { 
+          renderSkeletons(); 
+        }
+      } else {
+        renderSkeletons();
+      }
+
+      // 2. Frische Daten im Hintergrund von der API abrufen
+      loadData();
     }
 
-    // 2. Im Hintergrund frisch abrufen
-    loadData();
+    // Erstaufruf beim Öffnen der Seite
+    loadFromCacheAndFetch();
+
+    // Sofort reagieren, wenn der Browser auf dem Handy aus dem Hintergrund aufgeweckt wird
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible') {
+        loadFromCacheAndFetch();
+      }
+    });
   </script>
 </body>
 </html>
