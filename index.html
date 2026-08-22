@@ -424,7 +424,12 @@
         const firma = findMod('Firma');
         const keller = findMod('Keller');
         const og = findMod('OG');
-        const regen = findModByType('NAModule2');
+        
+        // Korrigierte Erkennung für den Netatmo Regensensor (NAModule3)
+        const regen = modules.find(m => 
+          m.type === 'NAModule3' || 
+          m.module_name?.toLowerCase().includes('regen')
+        ) || {};
 
         let forecastData = null;
         try {
