@@ -6,30 +6,8 @@ from http.server import BaseHTTPRequestHandler
 
 
 class handler(BaseHTTPRequestHandler):
-def do_GET(self):
-    # =========================================================
-    # 1. HIER KOMMT DIE PRÜFUNG HIN (GANZ AM ANFANG VON do_GET)
-    # =========================================================
-    secret_key = os.environ.get('API_SECRET_KEY', 'WqQDSySJJgjM5plOrXJSHBMw4MT6TEwj7')
+
     
-    # Schlüssel aus Header ('x-api-key') ODER URL ('?key=...') auslesen
-    api_key_header = self.headers.get('x-api-key')
-    parsed_url = urllib.parse.urlparse(self.path)
-    query_params = urllib.parse.parse_qs(parsed_url.query)
-    api_key_query = query_params.get('key', [None])[0]
-
-    request_key = api_key_header or api_key_query
-
-    # Wenn der Schlüssel fehlt oder falsch ist -> Sofort abbrechen!
-    if request_key != secret_key:
-      self.send_response(401)
-      self.send_header('Content-type', 'application/json')
-      self.end_headers()
-      error_msg = json.dumps({'error': 'Unauthorized: Ungueltiger API-Key'})
-      self.wfile.write(error_msg.encode('utf-8'))
-      return
-    # =========================================================
-  
   def do_GET(self):
     client_id = os.environ.get('NETATMO_CLIENT_ID')
     client_secret = os.environ.get('NETATMO_CLIENT_SECRET')
