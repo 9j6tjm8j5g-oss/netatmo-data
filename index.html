@@ -408,13 +408,8 @@
       dot.classList.remove('active');
 
       try {
-        // HTTP-Header für API-Key Authentifizierung
-        const res = await fetch('https://netatmo-data-theta.vercel.app/api/data', {
-          headers: {
-            'x-api-key': 'WqQDSySJJgjM5plOrXJSHBMw4MT6TEwj7'
-          }
-        });
-
+        // Direkter Fetch-Aufruf ohne API-Key
+        const res = await fetch('https://netatmo-data-theta.vercel.app/api/data');
         const rawJson = await res.json();
         
         const rawData = rawJson.body ? rawJson.body : rawJson;
@@ -430,7 +425,6 @@
         const keller = findMod('Keller');
         const og = findMod('OG');
         
-        // Regensensor Erweiterung (NAModule3 oder Keyword "regen")
         const regen = modules.find(m => 
           m.type === 'NAModule3' || 
           m.module_name?.toLowerCase().includes('regen')
@@ -548,7 +542,6 @@
       forecastWrapper.innerHTML = '';
 
       if (regen.dashboard_data) {
-        // Gerundete Regenwerte auf 1 Nachkommastelle
         const rainCurrent = regen.dashboard_data.Rain != null ? Number(regen.dashboard_data.Rain).toFixed(1) : '0';
         const rain1h = regen.dashboard_data.sum_rain_1 != null ? Number(regen.dashboard_data.sum_rain_1).toFixed(1) : '0';
         const rain24h = regen.dashboard_data.sum_rain_24 != null ? Number(regen.dashboard_data.sum_rain_24).toFixed(1) : '0';
@@ -648,9 +641,7 @@
       dots.forEach((dot, idx) => dot.classList.toggle('active', idx === pageIndex));
     });
 
-    // SCHNELLES LADEN FÜR MOBILGERÄTE (Wachwerden nach Inaktivität abfangen)
     function loadFromCacheAndFetch() {
-      // 1. Sofort gelagerte Daten anzeigen (0 ms Wartezeit)
       const savedData = localStorage.getItem('netatmo_cache');
       if (savedData) {
         try {
@@ -662,14 +653,11 @@
         renderSkeletons();
       }
 
-      // 2. Frische Daten im Hintergrund von der API abrufen
       loadData();
     }
 
-    // Erstaufruf beim Öffnen der Seite
     loadFromCacheAndFetch();
 
-    // Sofort reagieren, wenn der Browser auf dem Handy aus dem Hintergrund aufgeweckt wird
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible') {
         loadFromCacheAndFetch();
