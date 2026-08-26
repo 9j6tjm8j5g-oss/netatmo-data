@@ -408,7 +408,13 @@
       dot.classList.remove('active');
 
       try {
-        const res = await fetch('https://netatmo-data-theta.vercel.app/api/data');
+        // HTTP-Header für API-Key Authentifizierung
+        const res = await fetch('https://netatmo-data-theta.vercel.app/api/data', {
+          headers: {
+            'x-api-key': 'WqQDSySJJgjM5plOrXJSHBMw4MT6TEwj7'
+          }
+        });
+
         const rawJson = await res.json();
         
         const rawData = rawJson.body ? rawJson.body : rawJson;
